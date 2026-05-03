@@ -1,0 +1,76 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "support" %}
+{% block title %}Support{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in space-y-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-primary tracking-tight">Support & Documentation</h1>
+            <p class="text-sm text-slate-500 font-medium">Get help and view comprehensive system documentation.</p>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- System Manual Card -->
+        <div class="bg-white rounded-academic border border-slate-100 shadow-sm p-8 transition-all hover:shadow-md group">
+            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-book-open text-2xl"></i>
+            </div>
+            <h2 class="text-lg font-black text-primary mb-3">System Manual</h2>
+            <p class="text-xs font-bold text-slate-400 mb-6 leading-relaxed">Master the Sentence Transformer similarity detection algorithms and learn advanced techniques for repository management and dataset optimization.</p>
+            <a href="/documentation" class="inline-flex items-center gap-2 text-xs font-black text-accent hover:gap-3 transition-all uppercase tracking-widest">
+                Read Documentation 
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Support Agent Card -->
+        <div class="bg-white rounded-academic border border-slate-100 shadow-sm p-8 transition-all hover:shadow-md group">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-headset text-2xl"></i>
+            </div>
+            <h2 class="text-lg font-black text-primary mb-3">Contact IT Support</h2>
+            <p class="text-xs font-bold text-slate-400 mb-6 leading-relaxed">Experiencing technical friction with the ML pipeline or database synchronization? Our institutional IT team is standing by to assist with core infrastructure issues.</p>
+            <a href="mailto:mohametjoseph10@gmail.com" class="inline-flex items-center gap-2 text-xs font-black text-emerald-600 hover:gap-3 transition-all uppercase tracking-widest">
+                mohametjoseph10@gmail.com
+                <i class="fa-solid fa-envelope text-[10px]"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- System Specs Panel -->
+    <div class="bg-slate-900 rounded-academic p-8 border border-slate-800 shadow-2xl overflow-hidden relative">
+        <!-- Background Decoration -->
+        <div class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="flex flex-col md:flex-row items-start gap-6 relative z-10">
+            <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white/50 border border-white/10">
+                <i class="fa-solid fa-sliders"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-black text-white uppercase tracking-[0.2em] mb-4">Current System Specification</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Inference Model</p>
+                        <p class="text-xs font-bold text-slate-300">all-MiniLM-L6-v2</p>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Data Storage</p>
+                        <p class="text-xs font-bold text-slate-300">SQLite / MySQL (Sync)</p>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Core Engine</p>
+                        <p class="text-xs font-bold text-slate-300">Flask + ML Runtime</p>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Deployment</p>
+                        <p class="text-xs font-bold text-slate-300">v2.1.0 • Stable Build</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

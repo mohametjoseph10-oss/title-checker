@@ -1,0 +1,238 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "messages" %}
+{% block title %}Conversation History{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .animate-in {
+        animation-duration: 0.5s;
+        animation-fill-mode: both;
+    }
+    .fade-in { animation-name: fadeIn; }
+    .slide-in-from-left-4 { animation-name: slideInLeft; }
+    .slide-in-from-right-4 { animation-name: slideInRight; }
+    
+    /* Speech bubble triangles */
+    .bg-white::after {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 20px;
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-right: 8px solid white;
+    }
+    .bg-primary::after {
+        content: '';
+        position: absolute;
+        right: -8px;
+        top: 20px;
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-left: 8px solid #002045; /* Matches primary color */
+    }
+</style>
+<div class="animate-fade-in space-y-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="{{ url_for('admin_messages_page') }}" class="text-slate-400 hover:text-primary transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <h1 class="text-2xl font-extrabold text-primary tracking-tight">Conversation History</h1>
+            </div>
+            <p class="text-sm text-slate-500 font-medium">Viewing full interaction for message #{{ message.id }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter 
+                {% if message.status == 'Replied' %}bg-emerald-50 text-emerald-600 border border-emerald-100
+                {% elif message.status == 'Closed' %}bg-slate-100 text-slate-500 border border-slate-200
+                {% else %}bg-amber-50 text-amber-600 border border-amber-100{% endif %}">
+                Status: {{ message.status }}
+            </span>
+            {% if message.status != 'Closed' %}
+            <form action="{{ url_for('close_thread', message_id=message.id) }}" method="POST">
+                <button type="submit" class="px-3 py-1 bg-white text-slate-500 border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 hover:text-rose-600 transition-all shadow-sm">
+                    Close Thread
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Message Info Card -->
+    <section class="bg-white p-6 rounded-academic border border-slate-100 shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">User Information</h4>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary/5 text-primary rounded-full flex items-center justify-center font-bold">
+                        {{ message.name[0] | upper }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-primary">{{ message.name }}</p>
+                        <p class="text-xs text-slate-500">{{ message.email }}</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Message Subject</h4>
+                <p class="text-sm font-bold text-primary">{{ message.subject or 'No Subject' }}</p>
+                <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tighter">
+                    Started on: {{ message.date.strftime('%B %d, %Y at %H:%M %p') }}
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <!-- Chat Area -->
+        <div class="lg:col-span-3">
+            <section class="bg-slate-50 rounded-academic border border-slate-100 shadow-inner overflow-hidden flex flex-col h-[600px]">
+        <!-- Chat History -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-10 sidebar-scroll" id="chatContainer">
+            {% for msg in messages %}
+                {# Check if this is the start of the 'New' section #}
+                {% if loop.last and message.status == 'Pending' and msg.sender_type == 'user' %}
+                <div class="flex items-center gap-4 py-4">
+                    <div class="h-px bg-rose-200 flex-1"></div>
+                    <span class="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] bg-rose-50 px-3 py-1 rounded-full border border-rose-100">New Message Received</span>
+                    <div class="h-px bg-rose-200 flex-1"></div>
+                </div>
+                {% endif %}
+
+                {% if msg.sender_type == 'user' %}
+                <!-- User Message (Left) -->
+                <div class="flex flex-col items-start max-w-[85%] animate-in fade-in slide-in-from-left-4 duration-500">
+                    <div class="flex items-center gap-2 mb-2 px-1">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ msg.sender_email }}</span>
+                        <span class="text-[9px] font-bold text-slate-300">{% if msg.created_at is string %}{{ msg.created_at }}{% else %}{{ msg.created_at.strftime('%H:%M %p') }}{% endif %}</span>
+                        {% if loop.last and message.status == 'Pending' %}
+                        <span class="px-1.5 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded uppercase tracking-tighter animate-pulse">NEW</span>
+                        {% endif %}
+                    </div>
+                    <div class="bg-white border border-slate-100 text-slate-700 p-5 rounded-2xl rounded-tl-none shadow-sm text-sm leading-relaxed relative">
+                        {{ msg.reply_text }}
+                    </div>
+                </div>
+                {% else %}
+                <!-- Admin Reply (Right) -->
+                <div class="flex flex-col items-end max-w-[85%] ml-auto animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div class="flex items-center gap-2 mb-2 px-1">
+                        <span class="text-[9px] font-bold text-slate-300">{% if msg.created_at is string %}{{ msg.created_at }}{% else %}{{ msg.created_at.strftime('%H:%M %p') }}{% endif %}</span>
+                        <span class="text-[10px] font-black text-accent uppercase tracking-widest">Admin ({{ msg.sender_email }})</span>
+                    </div>
+                    <div class="bg-primary text-white p-5 rounded-2xl rounded-tr-none shadow-lg shadow-primary/10 text-sm leading-relaxed relative">
+                        {{ msg.reply_text }}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+
+
+        <!-- Quick Reply Box -->
+        <div class="p-4 bg-white border-t border-slate-100">
+            <form action="{{ url_for('admin_reply_message') }}" method="POST" class="relative">
+                <input type="hidden" name="message_id" value="{{ message.id }}">
+                <input type="hidden" name="redirect_to" value="conversation">
+                <input type="hidden" name="recipient_email" value="{{ message.email }}">
+                <input type="hidden" name="subject" value="Re: {{ message.subject or 'Support Inquiry' }}">
+                
+                <textarea name="reply_body" placeholder="Type your reply to send via email..." required
+                    class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 pr-16 text-sm font-medium text-slate-600 outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none h-20"></textarea>
+                
+                <button type="submit" class="absolute right-3 bottom-3 w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-accent transition-all shadow-lg shadow-primary/20">
+                    <i class="fa-solid fa-paper-plane text-sm"></i>
+                </button>
+            </form>
+            <p class="text-[9px] font-bold text-slate-400 mt-2 italic flex items-center gap-1">
+                <i class="fa-solid fa-circle-info"></i>
+                Replying here will send an email to the user and save the response to this history.
+            </p>
+            </section>
+        </div>
+
+        <!-- Admin Notes Sidebar -->
+        <div class="space-y-6">
+            <section class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden">
+                <header class="px-5 py-4 border-b border-slate-50 bg-slate-50/50">
+                    <h3 class="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-slate-400"></i>
+                        Internal Admin Notes
+                    </h3>
+                </header>
+                
+                <div class="p-5 space-y-4 max-h-[400px] overflow-y-auto sidebar-scroll">
+                    {% for note in admin_notes %}
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 relative group">
+                        <p class="text-xs text-slate-600 leading-relaxed">{{ note.note_text }}</p>
+                        <div class="mt-2 flex items-center justify-between">
+                            <span class="text-[9px] font-bold text-slate-400">{{ note.admin_email.split('@')[0] }}</span>
+                            <span class="text-[9px] text-slate-300">{% if note.created_at is string %}{{ note.created_at }}{% else %}{{ note.created_at.strftime('%b %d') }}{% endif %}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="py-8 text-center opacity-20">
+                        <i class="fa-solid fa-note-sticky text-2xl mb-2"></i>
+                        <p class="text-[10px] font-bold uppercase tracking-widest">No private notes</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="p-5 border-t border-slate-50">
+                    <form action="{{ url_for('add_admin_note', message_id=message.id) }}" method="POST" class="space-y-3">
+                        <textarea name="note_text" placeholder="Add a private note for other admins..." required
+                            class="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none h-24"></textarea>
+                        <button type="submit" class="w-full py-2 bg-primary text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all shadow-md shadow-primary/10">
+                            Save Note
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Robust scroll to bottom function
+    function scrollToBottom() {
+        const container = document.getElementById('chatContainer');
+        if (container) {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // Run on load and after small delay to ensure rendering
+    window.onload = function() {
+        scrollToBottom();
+        setTimeout(scrollToBottom, 300);
+    };
+
+    // Also watch for form submissions to keep view at bottom
+    document.querySelector('form')?.addEventListener('submit', () => {
+        setTimeout(scrollToBottom, 100);
+    });
+</script>
+{% endblock %}

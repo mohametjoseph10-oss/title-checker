@@ -1,0 +1,183 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "titles" %}
+{% block title %}Project Registry{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in space-y-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-primary tracking-tight">Project Registry</h1>
+            <p class="text-sm text-slate-500 font-medium">Manage institutional repository titles for similarity analysis.</p>
+        </div>
+        {% if session.get('role') in ['Super Admin', 'Admin'] %}
+        <button onclick="addTitle()" class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-academic font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95">
+            <i class="fa-solid fa-plus text-xs"></i>
+            Add New Title
+        </button>
+        {% endif %}
+    </header>
+
+    <!-- Control Bar -->
+    <section class="bg-white p-4 rounded-academic border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="relative w-full md:w-96">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+            <input type="text" id="searchInput" value="{{ current_search }}" placeholder="Search repository..." 
+                onkeyup="if(event.key === 'Enter') applyFilters()"
+                class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-xs font-medium transition-all">
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:block">Sort By</span>
+            <select id="sortSelect" onchange="applyFilters()" class="bg-white border border-slate-200 py-2 pl-3 pr-8 rounded-academic text-xs font-bold text-primary focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none cursor-pointer w-full md:w-48 transition-all">
+                <option value="id_asc" {% if sort_by == 'id' and order == 'asc' %}selected{% endif %}>ID: Oldest First</option>
+                <option value="id_desc" {% if sort_by == 'id' and order == 'desc' %}selected{% endif %}>ID: Newest First</option>
+                <option value="title_asc" {% if sort_by == 'title' and order == 'asc' %}selected{% endif %}>Title: A to Z</option>
+                <option value="title_desc" {% if sort_by == 'title' and order == 'desc' %}selected{% endif %}>Title: Z to A</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Table Section -->
+    <section class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="titlesTable">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-32 text-center cursor-pointer hover:text-primary transition-colors" onclick="toggleTableSort('id')">ID</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 cursor-pointer hover:text-primary transition-colors" onclick="toggleTableSort('title')">Validated Project Title</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right w-40">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for t in titles %}
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-6 py-5 text-center">
+                            <span class="text-[11px] font-bold text-slate-400 tabular-nums">#{{ t.id }}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="text-sm font-bold text-primary leading-snug" id="title-text-{{ t.id }}">{{ t.title }}</span>
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            <div class="flex justify-end gap-2">
+                                {% if session.get('role') in ['Super Admin', 'Admin'] %}
+                                <button onclick="editTitle({{ t.id }})" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all opacity-0 group-hover:opacity-100" title="Edit Title">
+                                    <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                </button>
+                                <button onclick="deleteTitle({{ t.id }})" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100" title="Remove Title">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
+                                {% else %}
+                                    <span class="text-[9px] font-bold text-slate-300 uppercase tracking-widest italic">Protected</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-20 text-center">
+                            <div class="flex flex-col items-center justify-center opacity-30">
+                                <i class="fa-solid fa-folder-closed text-4xl mb-3 text-slate-400"></i>
+                                <p class="text-sm font-bold italic text-slate-500">The project registry is currently empty.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Pagination Footer -->
+    <footer class="flex flex-col sm:flex-row justify-between items-center gap-4 px-2">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Showing <span class="text-primary">{{ titles|length }}</span> / {{ total_titles }} Records
+        </p>
+        
+        {% if total_pages > 1 %}
+        <div class="flex items-center gap-2">
+            <a href="{{ url_for('admin_titles_page', page=current_page-1, search=current_search, sort_by=sort_by, order=order) }}" 
+               class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 rounded-academic shadow-sm hover:bg-slate-50 transition-all {% if current_page == 1 %}pointer-events-none opacity-20{% endif %}">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </a>
+            
+            <div class="flex items-center gap-1.5">
+                {% for p in range(1, total_pages + 1) %}
+                <a href="{{ url_for('admin_titles_page', page=p, search=current_search, sort_by=sort_by, order=order) }}" 
+                   class="w-10 h-10 flex items-center justify-center rounded-academic font-black text-xs transition-all
+                   {% if p == current_page %}bg-primary text-white shadow-lg shadow-primary/20 scale-105{% else %}bg-white border border-slate-100 text-slate-400 hover:bg-slate-50{% endif %}">
+                    {{ p }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <a href="{{ url_for('admin_titles_page', page=current_page+1, search=current_search, sort_by=sort_by, order=order) }}" 
+               class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 rounded-academic shadow-sm hover:bg-slate-50 transition-all {% if current_page == total_pages %}pointer-events-none opacity-20{% endif %}">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+        </div>
+        {% endif %}
+    </footer>
+</div>
+
+<script>
+    function toggleTableSort(field) {
+        const currentField = "{{ sort_by }}";
+        const currentOrder = "{{ order }}";
+        let newOrder = 'asc';
+        if (field === currentField) newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+        applyFilters(field, newOrder);
+    }
+
+    function applyFilters(forcedSortBy = null, forcedOrder = null) {
+        const search = document.getElementById('searchInput').value;
+        let sort_by, order;
+        if (forcedSortBy) {
+            sort_by = forcedSortBy;
+            order = forcedOrder;
+        } else {
+            const sortVal = document.getElementById('sortSelect').value;
+            const parts = sortVal.split('_');
+            sort_by = parts[0];
+            order = parts[1];
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort_by', sort_by);
+        url.searchParams.set('order', order);
+        url.searchParams.set('page', '1');
+        if (search) url.searchParams.set('search', search);
+        else url.searchParams.delete('search');
+        window.location.href = url.toString();
+    }
+
+    async function addTitle() {
+        const title = prompt("Enter new project title:");
+        if (!title) return;
+        const res = await fetch('/titles', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title})
+        });
+        if(res.ok) window.location.reload();
+    }
+
+    async function editTitle(id) {
+        const current = document.getElementById('title-text-'+id).innerText;
+        const title = prompt("Edit title:", current);
+        if (!title || title === current) return;
+        const res = await fetch('/titles/' + id, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title})
+        });
+        if(res.ok) window.location.reload();
+    }
+
+    async function deleteTitle(id) {
+        if (!confirm("Remove this title from institutional repository?")) return;
+        const res = await fetch('/titles/' + id, { method: 'DELETE' });
+        if(res.ok) window.location.reload();
+    }
+</script>
+{% endblock %}

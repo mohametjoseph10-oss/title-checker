@@ -1,0 +1,120 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "settings" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in space-y-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-primary tracking-tight">System Settings</h1>
+            <p class="text-sm text-slate-500 font-medium">Configure application parameters and preferences.</p>
+        </div>
+    </header>
+
+    <div class="max-w-3xl space-y-6">
+        <!-- Threshold Setting -->
+        <section class="bg-white rounded-academic border border-slate-100 shadow-sm p-6 transition-all hover:shadow-md">
+            <h2 class="text-sm font-black text-primary mb-2 flex items-center gap-2 uppercase tracking-widest">
+                <i class="fa-solid fa-sliders text-accent text-sm"></i> Similarity Threshold
+            </h2>
+            <p class="text-xs font-bold text-slate-400 mb-6 leading-relaxed">Define the mathematical threshold for determining if a project title is considered a conflict. Default is <span class="text-primary">0.70 (70%)</span>.</p>
+            
+            <div class="flex items-center gap-3">
+                <input type="number" id="threshold" value="0.70" step="0.01" min="0" max="1" class="w-32 bg-slate-50 border border-slate-100 rounded-academic px-4 py-2.5 text-xs font-black text-primary focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all">
+                {% if session.get('role') == 'Super Admin' %}
+                <button onclick="saveSetting('threshold')" class="bg-primary text-white px-6 py-2.5 rounded-academic font-bold text-xs shadow-lg shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95">Save Configuration</button>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- System Name Setting -->
+        <section class="bg-white rounded-academic border border-slate-100 shadow-sm p-6 transition-all hover:shadow-md">
+            <h2 class="text-sm font-black text-primary mb-2 flex items-center gap-2 uppercase tracking-widest">
+                <i class="fa-solid fa-heading text-accent text-sm"></i> System Identity
+            </h2>
+            <p class="text-xs font-bold text-slate-400 mb-6 leading-relaxed">Update the primary application name displayed across the public portal and administrative header.</p>
+            
+            <div class="flex flex-col md:flex-row items-center gap-3">
+                <input type="text" id="sysName" value="Project Title Checker System" class="w-full bg-slate-50 border border-slate-100 rounded-academic px-4 py-2.5 text-xs font-black text-primary focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all">
+                {% if session.get('role') == 'Super Admin' %}
+                <button onclick="saveSetting('sysName')" class="w-full md:w-auto whitespace-nowrap bg-primary text-white px-6 py-2.5 rounded-academic font-bold text-xs shadow-lg shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95">Update Identity</button>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Change Password Setting -->
+        <section class="bg-white rounded-academic border border-slate-100 shadow-sm p-6 transition-all hover:shadow-md">
+            <h2 class="text-sm font-black text-primary mb-2 flex items-center gap-2 uppercase tracking-widest">
+                <i class="fa-solid fa-key text-accent text-sm"></i> Administrative Security
+            </h2>
+            <p class="text-xs font-bold text-slate-400 mb-6 leading-relaxed">Modify your personal administrative credentials. Ensure a strong combination for security.</p>
+            
+            <div class="space-y-5 max-w-sm">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
+                    <input type="password" id="newPwd" class="w-full bg-slate-50 border border-slate-100 rounded-academic px-4 py-2.5 text-xs font-black text-primary focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm New Password</label>
+                    <input type="password" id="confirmPwd" class="w-full bg-slate-50 border border-slate-100 rounded-academic px-4 py-2.5 text-xs font-black text-primary focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all">
+                </div>
+                {% if session.get('role') == 'Super Admin' %}
+                <button onclick="changePassword()" class="w-full bg-primary text-white px-6 py-3 rounded-academic font-black text-xs shadow-lg shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest">
+                    <i class="fa-solid fa-shield-halved text-xs"></i>
+                    Update Security
+                </button>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+async function saveSetting(type) {
+    const val = type === 'threshold' ? document.getElementById('threshold').value : document.getElementById('sysName').value;
+    
+    const res = await fetch('/admin/settings/update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({type: type, value: val})
+    });
+    
+    const data = await res.json();
+    if(res.ok && data.success) {
+        alert(data.message || "Configuration updated successfully.");
+    } else {
+        alert(data.error || "Update failed.");
+    }
+}
+
+async function changePassword() {
+    const pwd1 = document.getElementById('newPwd').value;
+    const pwd2 = document.getElementById('confirmPwd').value;
+    
+    if(!pwd1 || !pwd2) {
+        alert("Credential fields are mandatory.");
+        return;
+    }
+    if(pwd1 !== pwd2) {
+        alert("Password verification mismatch.");
+        return;
+    }
+    
+    const res = await fetch('/admin/settings/password', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({password: pwd1})
+    });
+    
+    const data = await res.json();
+    if(res.ok && data.success) {
+        alert("Security credentials updated successfully.");
+        document.getElementById('newPwd').value = '';
+        document.getElementById('confirmPwd').value = '';
+    } else {
+        alert(data.error || "Administrative update failed.");
+    }
+}
+</script>
+{% endblock %}

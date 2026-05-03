@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Project Title Checker - Professional Academic Validation{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative py-16 md:py-28 overflow-hidden hero-gradient">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+        <div class="space-y-8">
+            <div>
+                <span class="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-light-blue text-brand-blue font-extrabold text-[11px] uppercase tracking-wider mb-6 badge-pulse">
+                    <span class="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
+                    Machine Learning Validation
+                </span>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-navy leading-[1.05] tracking-tight">
+                    Ensure Your Project <br/>
+                    <span class="text-brand-blue">Title is Unique</span>
+                </h1>
+            </div>
+            
+            <p class="text-slate-600 text-lg md:text-xl leading-relaxed max-w-xl">
+                Our System uses advanced <span class="font-bold text-navy">NLP</span> and <span class="font-bold text-navy">Machine Learning</span> to detect semantic similarities, ensuring your academic research stands out with a truly original title.
+            </p>
+
+            <div class="flex flex-wrap gap-4 pt-4">
+                <a href="{{ url_for('check_page') }}" class="bg-navy text-white px-8 py-4 rounded-premium font-bold text-sm shadow-xl shadow-navy/20 hover:shadow-2xl hover:bg-slate-800 transition-all flex items-center gap-3 btn-hover-effect">
+                    Check Your Title
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </a>
+                <a href="{{ url_for('methodology_page') }}" class="bg-white border border-slate-200 text-navy px-8 py-4 rounded-premium font-bold text-sm hover:bg-slate-50 transition-all flex items-center gap-3 shadow-soft">
+                    View Methodology
+                    <i class="fa-solid fa-book-open text-xs text-brand-blue"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="relative">
+            <!-- Decorative Elements -->
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-blue/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-navy/5 rounded-full blur-3xl"></div>
+            
+            <!-- Main Image Card -->
+            <div class="relative rounded-premium overflow-hidden border border-white shadow-premium animate-float bg-white p-4">
+                <div class="rounded-[20px] overflow-hidden">
+                    <img src="{{ url_for('static', filename='images/hero-illustration.png') }}" alt="AI Analysis Illustration" class="w-full h-auto object-cover"/>
+                </div>
+                <!-- Floating Analytics Card -->
+                <div class="absolute bottom-10 -left-6 bg-white p-5 rounded-2xl shadow-premium border border-slate-50 hidden md:block">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-500/10 text-green-600 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-check-double"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Similarity Score</p>
+                            <p class="text-lg font-black text-navy">98.4% Accuracy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="pb-16 mt-[-40px] relative z-20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="bg-navy rounded-premium p-10 md:p-14 shadow-2xl grid grid-cols-2 lg:grid-cols-4 gap-8 text-center border border-white/10">
+            <div class="space-y-2 border-r border-white/10 last:border-0">
+                <h3 class="text-3xl md:text-4xl font-black text-white">{{ "{:,}".format(total_titles) }}+</h3>
+                <p class="text-[11px] font-bold text-blue-200 uppercase tracking-[0.2em]">Total Indexed Titles</p>
+            </div>
+            <div class="space-y-2 border-r border-white/10 lg:border-r last:border-0">
+                <h3 class="text-3xl md:text-4xl font-black text-white">{{ "{:,}".format(total_checks) }}</h3>
+                <p class="text-[11px] font-bold text-blue-200 uppercase tracking-[0.2em]">Similarity Analyses</p>
+            </div>
+            <div class="space-y-2 border-r border-white/10 last:border-0">
+                <h3 class="text-3xl md:text-4xl font-black text-white">{{ unique_percentage }}%</h3>
+                <p class="text-[11px] font-bold text-blue-200 uppercase tracking-[0.2em]">Unique Titles</p>
+            </div>
+            <div class="space-y-2 last:border-0">
+                <h3 class="text-3xl md:text-4xl font-black text-white">{{ "{:,}".format(conflict_alerts) }}</h3>
+                <p class="text-[11px] font-bold text-blue-200 uppercase tracking-[0.2em]">Conflict Alerts</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Process Section -->
+<section class="py-24 bg-white relative">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 space-y-4">
+            <span class="text-brand-blue font-black text-xs uppercase tracking-[0.3em]">The Process</span>
+            <h2 class="text-3xl md:text-4xl font-black text-navy">How It Works</h2>
+            <p class="text-slate-500 text-lg max-w-2xl mx-auto">
+                Our validation pipeline combines semantic embedding models with high-speed indexing to provide instant results.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+            <div class="hidden md:block absolute top-1/2 left-0 w-full h-px bg-slate-100 -z-10"></div>
+            
+            <div class="step-card bg-white p-8 rounded-premium border border-slate-100 shadow-soft text-center group">
+                <div class="w-16 h-16 bg-navy text-white rounded-[20px] flex items-center justify-center text-2xl font-black mb-6 mx-auto shadow-lg shadow-navy/20 group-hover:scale-110 transition-transform">01</div>
+                <h3 class="font-black text-xl text-navy mb-4">Enter Project Title</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Input your proposed research title into our validation engine.</p>
+            </div>
+
+            <div class="step-card bg-white p-8 rounded-premium border border-slate-100 shadow-soft text-center group">
+                <div class="w-16 h-16 bg-brand-blue text-white rounded-[20px] flex items-center justify-center text-2xl font-black mb-6 mx-auto shadow-lg shadow-brand-blue/20 group-hover:scale-110 transition-transform">02</div>
+                <h3 class="font-black text-xl text-navy mb-4">Analyze Similarity</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Our ML models compare semantic meanings, not just keywords.</p>
+            </div>
+
+            <div class="step-card bg-white p-8 rounded-premium border border-slate-100 shadow-soft text-center group">
+                <div class="w-16 h-16 bg-blue-500 text-white rounded-[20px] flex items-center justify-center text-2xl font-black mb-6 mx-auto shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">03</div>
+                <h3 class="font-black text-xl text-navy mb-4">Get Validation Result</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Receive a comprehensive report including similarity scores.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Group Members Section -->
+{% if group_members %}
+<section class="py-24 pb-32 bg-white relative" id="team">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 space-y-4">
+            <span class="text-brand-blue font-black text-xs uppercase tracking-[0.3em]">Our Team</span>
+            <h2 class="text-3xl md:text-4xl font-black text-navy">Meet the Group Members</h2>
+            <p class="text-slate-500 text-lg max-w-2xl mx-auto">
+                The talented students behind this academic project.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 md:gap-8">
+            {% for m in group_members %}
+            <a href="{{ url_for('member_detail', member_id=m.id) }}" class="member-card group text-center no-underline" style="text-decoration:none;">
+                <div class="member-avatar-wrap mx-auto mb-5">
+                    <!-- Clipping circle: overflow hidden keeps the zoomed/moved image inside -->
+                    <div style="border-radius:50%; overflow:hidden;
+                                border:3.5px solid #fff; box-shadow:0 6px 20px rgba(0,32,69,0.15);
+                                position:relative; z-index:1; transition:transform 0.3s ease;"
+                         class="member-avatar-clip w-[80px] h-[80px] sm:w-[110px] sm:h-[110px]">
+                        <img
+                            src="{{ url_for('static', filename='images/' + m.photo) }}"
+                            alt="{{ m.full_name }}"
+                            style="width:100%; height:100%; object-fit:cover; object-position: center top; display:block;
+                                   transform-origin: center center;
+                                   transform: scale({{ m.image_scale | default(1, true) }}) translate({{ m.image_pos_x | default(0, true) }}%, {{ m.image_pos_y | default(0, true) }}%);"
+                            onerror="this.src='https://ui-avatars.com/api/?name={{ m.full_name | urlencode }}&background=002045&color=fff&size=160'"
+                        >
+                    </div>
+                    <div class="member-avatar-ring"></div>
+                </div>
+                <p class="font-black text-navy text-base group-hover:text-brand-blue transition-colors">{{ m.full_name }}</p>
+                <p class="text-xs font-semibold text-slate-400 mt-1">{{ m.department }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="py-20 relative overflow-hidden">
+    <div class="max-w-5xl mx-auto px-6 relative z-10">
+        <div class="bg-gradient-to-br from-brand-blue to-navy rounded-[40px] p-12 md:p-20 text-center shadow-2xl relative overflow-hidden">
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-6">Ready to verify your project title?</h2>
+            <p class="text-blue-100 text-lg mb-10 max-w-xl mx-auto opacity-90">
+                Join thousands of researchers who trust our system to protect their intellectual property.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('check_page') }}" class="bg-white text-navy px-10 py-5 rounded-premium font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">
+                    Start Checking Now
+                </a>
+                <a href="{{ url_for('contact') }}" class="bg-transparent border border-white/30 text-white px-10 py-5 rounded-premium font-black text-sm uppercase tracking-widest hover:bg-white/10 transition-all">
+                    Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block head %}
+<style>
+    .hero-gradient {
+        background: radial-gradient(circle at 70% 30%, rgba(0, 86, 179, 0.05) 0%, transparent 50%),
+                    radial-gradient(circle at 10% 80%, rgba(0, 32, 69, 0.03) 0%, transparent 40%);
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    .step-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .step-card:hover { transform: translateY(-8px); border-color: #0056b3; }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+    .badge-pulse::before {
+        content: ''; position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+        background: inherit; border-radius: inherit; z-index: -1;
+        animation: pulse-ring 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    }
+    @keyframes pulse-ring {
+        0% { transform: scale(0.95); opacity: 0.8; }
+        70% { transform: scale(1.1); opacity: 0; }
+        100% { transform: scale(1.1); opacity: 0; }
+    }
+
+    /* ── Group Member Cards ── */
+    .member-card {
+        background: #fff;
+        border-radius: 24px;
+        padding: 1.5rem 1rem 1.25rem;
+        width: 100%;
+        max-width: 170px;
+        box-shadow: 0 8px 30px -8px rgba(0,32,69,0.13);
+        border: 1.5px solid #e8edf5;
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+        display: block;
+        margin: 0 auto;
+    }
+    @media (min-width: 640px) {
+        .member-card {
+            padding: 2rem 1.5rem 1.5rem;
+            width: 170px;
+        }
+    }
+    .member-card:hover {
+        transform: translateY(-10px) scale(1.03);
+        box-shadow: 0 20px 50px -12px rgba(0,86,179,0.22);
+        border-color: #0056b3;
+    }
+    .member-avatar-wrap {
+        position: relative;
+        width: 80px;
+        height: 80px;
+    }
+    @media (min-width: 640px) {
+        .member-avatar-wrap {
+            width: 110px;
+            height: 110px;
+        }
+    }
+    .member-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3.5px solid #fff;
+        box-shadow: 0 6px 20px rgba(0,32,69,0.15);
+        position: relative;
+        z-index: 1;
+        transition: transform 0.3s ease;
+    }
+    .member-card:hover .member-avatar {
+        transform: scale(1.07);
+    }
+    .member-avatar-ring {
+        position: absolute;
+        inset: -5px;
+        border-radius: 50%;
+        border: 2.5px dashed #0056b3;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        animation: spin-slow 8s linear infinite;
+    }
+    .member-card:hover .member-avatar-ring {
+        opacity: 1;
+    }
+    @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}

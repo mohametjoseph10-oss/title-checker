@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Check Title Similarity | Project Title Checker{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 pt-12 pb-20">
+    
+    <!-- Header Section -->
+    <div class="text-center mb-12 space-y-4">
+        <span class="inline-flex items-center gap-2 py-1.5 px-3 rounded-full bg-light-blue text-brand-blue font-bold text-[10px] uppercase tracking-widest">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Advanced NLP Engine
+        </span>
+        <h1 class="text-4xl md:text-5xl font-black text-navy tracking-tight">Check Project Title Similarity</h1>
+        <p class="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed">
+            Utilizing state-of-the-art Natural Language Processing to ensure your academic research title is unique and free from semantic conflicts.
+        </p>
+    </div>
+
+    <!-- Input Form Card -->
+    <div class="premium-card rounded-premium p-8 md:p-10 mb-12 relative overflow-hidden bg-white border border-slate-100 shadow-soft">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+        
+        <div class="space-y-8 relative z-10">
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <label for="titleInput" class="text-xs font-black text-navy uppercase tracking-[0.2em]">Project Title</label>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ready for analysis</span>
+                </div>
+                <textarea id="titleInput" rows="3" 
+                    class="w-full px-6 py-5 rounded-academic border border-slate-200 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 text-lg font-medium transition-all resize-none placeholder:text-slate-300 shadow-sm" 
+                    placeholder="Enter your proposed academic project title..."></textarea>
+                <p class="text-[11px] text-slate-400 font-medium flex items-center gap-2 px-1">
+                    <i class="fa-solid fa-circle-info text-brand-blue"></i>
+                    Supports thesis, dissertation, and research project titles.
+                </p>
+            </div>
+            
+            <div class="flex justify-center">
+                <button id="checkBtn" onclick="checkTitle()" class="w-full md:w-auto bg-navy text-white px-12 py-5 rounded-premium font-black text-sm uppercase tracking-widest shadow-xl shadow-navy/20 hover:bg-slate-800 hover:scale-[1.02] transition-all flex items-center justify-center gap-3 btn-hover-effect active:scale-95">
+                    <i class="fa-solid fa-magnifying-glass-chart text-base"></i>
+                    Check Similarity
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Area -->
+    <div id="resultContainer" class="space-y-8">
+        <!-- Empty State -->
+        <div id="emptyState" class="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-premium p-16 text-center animate-fade-in">
+            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-sm">
+                <i class="fa-solid fa-chart-simple text-slate-300 text-4xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-400">Analysis Pending</h3>
+            <p class="text-slate-400 text-sm max-w-xs mx-auto mt-2 italic">Results will appear here once you submit your project title for verification.</p>
+        </div>
+
+        <!-- Result Section (Hidden) -->
+        <div id="resultSection" class="hidden animate-fade-in premium-card rounded-premium overflow-hidden bg-white border border-slate-100 shadow-soft">
+            <!-- Banner Header -->
+            <div id="resultBanner" class="px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-50">
+                <div class="flex items-center gap-5">
+                    <div id="resultIconBox" class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i id="resultIcon" class="fa-solid text-2xl"></i>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <span id="resultStatus" class="text-xl font-black uppercase tracking-tight block"></span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mt-1">Verification Status</span>
+                    </div>
+                </div>
+                
+                <div class="w-full md:w-48 space-y-2">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Similarity Match</span>
+                        <span id="resultScore" class="text-2xl font-black text-navy leading-none"></span>
+                    </div>
+                    <div class="progress-bar-container bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div id="progressBarFill" class="progress-bar-fill w-0 h-full transition-all duration-1000"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Details Body -->
+            <div class="p-8 md:p-10 space-y-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                            <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                            Your Entered Title
+                        </div>
+                        <div class="p-5 bg-slate-50 rounded-academic border border-slate-100 italic text-navy font-medium leading-relaxed">
+                            <p id="dispEntered"></p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                            <div class="w-2 h-2 rounded-full bg-brand-blue"></div>
+                            Closest Matching Title
+                        </div>
+                        <div class="p-5 bg-blue-50/30 rounded-academic border border-blue-100/50 italic text-brand-blue font-medium leading-relaxed">
+                            <p id="dispMatched"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recommendation -->
+                <div id="recommendationBox" class="p-6 rounded-academic border flex gap-4 items-start shadow-sm">
+                    <div id="recIconBox" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-circle-info text-xl"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="font-black text-xs uppercase tracking-widest opacity-70">Recommendation</h4>
+                        <div id="recommendationText" class="text-sm font-medium leading-relaxed"></div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center pt-4">
+                    <button onclick="window.print()" class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hover:text-navy transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i>
+                        Export Validation Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function checkTitle() {
+    const titleInput = document.getElementById('titleInput');
+    const title = titleInput.value.trim();
+    if(!title) {
+        alert("Please enter a project title.");
+        return;
+    }
+    
+    const btn = document.getElementById('checkBtn');
+    const emptyState = document.getElementById('emptyState');
+    const resultSection = document.getElementById('resultSection');
+    const progressBarFill = document.getElementById('progressBarFill');
+    
+    // UI State: Loading
+    const originalBtnHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-base"></i> Processing...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/check-title', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title })
+        });
+        const result = await response.json();
+        
+        // Reset Progress Bar
+        progressBarFill.style.width = '0%';
+        
+        // Populate Result Section
+        document.getElementById('dispEntered').textContent = `"${result.entered_title}"`;
+        document.getElementById('dispMatched').textContent = `"${result.most_similar}"`;
+        const percentage = Math.round(result.score * 100);
+        document.getElementById('resultScore').textContent = `${percentage}%`;
+        
+        const banner = document.getElementById('resultBanner');
+        const icon = document.getElementById('resultIcon');
+        const status = document.getElementById('resultStatus');
+        const scoreVal = document.getElementById('resultScore');
+        const recBox = document.getElementById('recommendationBox');
+        const recText = document.getElementById('recommendationText');
+        const iconBox = document.getElementById('resultIconBox');
+        const recIconBox = document.getElementById('recIconBox');
+        
+        if (result.result === 'TAKEN') {
+            banner.className = "px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-red-50 bg-red-50/20";
+            icon.className   = 'fa-solid fa-circle-xmark';
+            iconBox.className = 'w-14 h-14 rounded-2xl flex items-center justify-center bg-red-500 text-white shadow-red-500/20 shadow-lg';
+            status.textContent = 'Too Similar';
+            status.className   = 'text-xl font-black uppercase tracking-tight block text-red-600';
+            scoreVal.className = 'text-2xl font-black text-red-600 leading-none';
+            recBox.className   = 'p-6 rounded-academic bg-red-50/50 text-red-900 border border-red-100 flex gap-4 items-start shadow-sm';
+            recIconBox.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-red-100 text-red-600';
+            recText.innerHTML  = '<strong>Revise Required:</strong> Your title shows significant overlap with existing records. We recommend modifying the research scope or refining the title for better originality.';
+            progressBarFill.className = 'progress-bar-fill bg-red-500 h-full';
+        } else {
+            banner.className = "px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-emerald-50 bg-emerald-50/20";
+            icon.className   = 'fa-solid fa-certificate';
+            iconBox.className = 'w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-500 text-white shadow-emerald-500/20 shadow-lg';
+            status.textContent = 'Unique Title';
+            status.className   = 'text-xl font-black uppercase tracking-tight block text-emerald-600';
+            scoreVal.className = 'text-2xl font-black text-emerald-600 leading-none';
+            recBox.className   = 'p-6 rounded-academic bg-emerald-50/50 text-emerald-900 border border-emerald-100 flex gap-4 items-start shadow-sm';
+            recIconBox.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-emerald-100 text-emerald-600';
+            recText.innerHTML  = '<strong>Approved:</strong> No critical similarities detected. This title is highly original and suitable for academic submission.';
+            progressBarFill.className = 'progress-bar-fill bg-emerald-500 h-full';
+        }
+
+        // Show Results
+        emptyState.classList.add('hidden');
+        resultSection.classList.remove('hidden');
+        
+        // Trigger Progress Bar Animation
+        setTimeout(() => {
+            progressBarFill.style.width = `${percentage}%`;
+        }, 100);
+        
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+    } catch(err) {
+        console.error(err);
+        alert('An error occurred during analysis. Please try again.');
+    } finally {
+        btn.innerHTML = originalBtnHTML;
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

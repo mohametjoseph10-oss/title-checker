@@ -1,0 +1,124 @@
+<footer class="bg-primary text-white pt-16 pb-8 border-t border-white/10 font-inter">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 mb-12">
+            <!-- Column 1: Brand Section -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center border border-accent/30 text-accent">
+                        <i class="fa-solid fa-graduation-cap text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-lg font-black tracking-tighter block uppercase">Title Checker</span>
+                        <span class="text-[9px] text-accent font-black uppercase tracking-[0.2em] block">Academic System</span>
+                    </div>
+                </div>
+                <p class="text-slate-400 text-xs leading-relaxed max-w-xs font-medium">
+                    Advanced validation system designed for academic project title checking using high-precision machine learning and NLP techniques.
+                </p>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="space-y-6">
+                <h4 class="text-white font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
+                    <i class="fa-solid fa-link text-accent"></i>
+                    Navigation
+                </h4>
+                <ul class="space-y-3">
+                    <li>
+                        <a href="{{ url_for('home') }}" class="text-slate-400 hover:text-white transition-all text-xs font-bold flex items-center gap-2">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('check_page') }}" class="text-slate-400 hover:text-white transition-all text-xs font-bold flex items-center gap-2">
+                            Check Title
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('methodology_page') }}" class="text-slate-400 hover:text-white transition-all text-xs font-bold flex items-center gap-2">
+                            Methodology
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('repository') }}" class="text-slate-400 hover:text-white transition-all text-xs font-bold flex items-center gap-2">
+                            Repository
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('contact') }}" class="text-slate-400 hover:text-white transition-all text-xs font-bold flex items-center gap-2">
+                            Contact Support
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Column 3: System Features -->
+            <div class="space-y-6">
+                <h4 class="text-white font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
+                    <i class="fa-solid fa-microchip text-accent"></i>
+                    Features
+                </h4>
+                <ul class="space-y-3 text-slate-400 text-xs font-bold">
+                    <li class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-[8px] text-accent"></i>
+                        Similarity Check
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-[8px] text-accent"></i>
+                        NLP Processing
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-[8px] text-accent"></i>
+                        Dataset Match
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Column 4: Contact Support -->
+            <div class="space-y-6">
+                <h4 class="text-white font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
+                    <i class="fa-solid fa-headset text-accent"></i>
+                    Support
+                </h4>
+                <ul class="space-y-4 text-xs font-bold">
+                    <li>
+                        <a href="mailto:mohametjoseph10@gmail.com" class="flex items-center gap-3 text-slate-400 hover:text-white transition-colors">
+                            <i class="fa-solid fa-envelope text-accent"></i>
+                            mohametjoseph10@gmail.com
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://wa.me/611146587?text=Hello%20I%20need%20support"
+                            target="_blank"
+                            class="flex items-center gap-3 text-slate-400 hover:text-white transition-colors">
+                                <i class="fa-brands fa-whatsapp text-green-500"></i>
+                                Chat on WhatsApp
+                        </a>
+                    </li>
+                    <li class="flex items-center gap-3 text-slate-400">
+                        <i class="fa-solid fa-location-dot text-accent"></i>
+                        Mogadishu, Somalia
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                © 2024 Project Title Checker System
+            </div>
+
+            <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                <a href="{{ url_for('privacy') }}" class="hover:text-white transition-colors">Privacy</a>
+                <a href="{{ url_for('terms') }}" class="hover:text-white transition-colors">Terms</a>
+                <a href="{{ url_for('documentation') }}" class="hover:text-white transition-colors">Manual</a>
+            </div>
+
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-60">
+                V2.1.0 • Stable Build
+            </div>
+        </div>
+    </div>
+</footer>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">

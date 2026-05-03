@@ -1,0 +1,497 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "analytics" %}
+{% block title %}Title Analytics{% endblock %}
+
+{% block content %}
+<style>
+.title-link {
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+    transition: 0.2s;
+}
+.title-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+</style>
+<div class="animate-fade-in space-y-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-primary tracking-tight">Title Analytics</h1>
+            <p class="text-sm text-slate-500 font-medium">Detailed statistics and system usage insights.</p>
+        </div>
+        <div class="relative group">
+            <i class="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+            <select onchange="window.location.href='/admin/analytics?period=' + this.value" class="pl-9 pr-10 py-2.5 bg-white border border-slate-100 rounded-academic text-xs font-bold text-primary outline-none cursor-pointer appearance-none shadow-sm hover:border-accent transition-all">
+                <option value="7" {% if current_period == '7' %}selected{% endif %}>Last 7 Days</option>
+                <option value="30" {% if current_period == '30' %}selected{% endif %}>Last 30 Days</option>
+                <option value="90" {% if current_period == '90' %}selected{% endif %}>Last 90 Days</option>
+                <option value="all" {% if current_period == 'all' %}selected{% endif %}>All Time</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+        </div>
+    </header>
+
+    <!-- KPI Grid -->
+    <section class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-box-archive text-lg"></i>
+                </div>
+                <span class="text-[10px] font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">+2.4%</span>
+            </div>
+            <h2 class="text-2xl font-black text-primary tracking-tight tabular-nums">{{ total_titles }}</h2>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Registry</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-magnifying-glass-chart text-lg"></i>
+                </div>
+                <span class="text-[10px] font-black text-purple-500 bg-purple-50 px-2 py-0.5 rounded-full">+12%</span>
+            </div>
+            <h2 class="text-2xl font-black text-primary tracking-tight tabular-nums">{{ total_checks }}</h2>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Analyses</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-percent text-lg"></i>
+                </div>
+                <span class="text-[10px] font-black text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">Stable</span>
+            </div>
+            <h2 class="text-2xl font-black text-primary tracking-tight tabular-nums">{{ "%.1f"|format(avg_similarity) }}%</h2>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Avg Score</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-circle-check text-lg"></i>
+                </div>
+                <span class="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">Optimal</span>
+            </div>
+            <h2 class="text-2xl font-black text-primary tracking-tight tabular-nums">{{ unique_count }}</h2>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Unique</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                </div>
+                <span class="text-[10px] font-black text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">-5%</span>
+            </div>
+            <h2 class="text-2xl font-black text-primary tracking-tight tabular-nums">{{ taken_count }}</h2>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Conflicts</p>
+        </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Result Distribution -->
+        <div class="bg-white p-6 rounded-academic border border-slate-100 shadow-sm flex flex-col h-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+                    Originality Distribution
+                </h3>
+                <!-- Trend Indicator -->
+                {% set total = unique_count + taken_count %}
+                {% if total > 0 %}
+                {% set unique_p = (unique_count / total) * 100 %}
+                {% if unique_p >= 75 %}
+                <div class="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase shadow-sm">
+                    <i class="fa-solid fa-arrow-trend-up"></i> Healthy
+                </div>
+                {% else %}
+                <div class="flex items-center gap-1.5 px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-black uppercase shadow-sm">
+                    <i class="fa-solid fa-arrow-trend-down"></i> Review
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            {% if total > 0 %}
+            <div class="flex-grow flex flex-col justify-center gap-6">
+                <!-- Chart Container -->
+                <div class="relative w-full h-48 mx-auto mt-2 px-6">
+                    <canvas id="originalityChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                        <span class="text-5xl font-black text-primary tracking-tighter">{{ unique_p|round|int }}%</span>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Unique</span>
+                    </div>
+                </div>
+                
+                <!-- Custom Legend & Progress -->
+                <div class="flex flex-col gap-4 mt-2">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors group cursor-default">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full group-hover:scale-125 transition-transform"></span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Unique</span>
+                            </div>
+                            <span class="text-xl font-black text-primary tabular-nums">{{ unique_count }}</span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 hover:border-rose-200 hover:bg-rose-50/50 transition-colors group cursor-default">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="w-2 h-2 bg-rose-500 rounded-full group-hover:scale-125 transition-transform"></span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Conflicts</span>
+                            </div>
+                            <span class="text-xl font-black text-primary tabular-nums">{{ taken_count }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar Below -->
+                    <div class="mt-2">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aggregate Total: <span class="text-primary">{{ total }}</span></span>
+                        </div>
+                        <div class="w-full h-1.5 bg-rose-100 rounded-full overflow-hidden flex shadow-inner">
+                            <div class="h-full bg-emerald-500 transition-all duration-1000 ease-out" style="width: {{ unique_p }}%"></div>
+                            <div class="h-full bg-rose-500 transition-all duration-1000 ease-out" style="width: {{ 100 - unique_p }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="flex-grow flex flex-col items-center justify-center p-8 text-center opacity-50">
+                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border-2 border-slate-100 border-dashed mb-4">
+                    <i class="fa-solid fa-chart-pie text-2xl text-slate-300"></i>
+                </div>
+                <p class="text-sm font-bold text-slate-500">Insufficient Data</p>
+                <p class="text-[10px] text-slate-400 mt-1">Check some titles to generate analytics.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Activity Bar Chart -->
+        <div class="bg-white p-6 rounded-academic border border-slate-100 shadow-sm flex flex-col h-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+                    Operational Velocity
+                </h3>
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-full">Requests / Day</span>
+            </div>
+            
+            {% if recent_activity %}
+            <div class="flex-grow flex flex-col justify-between">
+                <!-- Summary Badges -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
+                        <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Today's Requests</span>
+                        <span id="stat-today" class="block text-xl font-black text-primary tabular-nums">-</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
+                        <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Daily Average</span>
+                        <span id="stat-avg" class="block text-xl font-black text-primary tabular-nums">-</span>
+                    </div>
+                </div>
+                
+                <!-- Chart -->
+                <div class="relative h-48 w-full">
+                    <canvas id="velocityChart"></canvas>
+                </div>
+            </div>
+            {% else %}
+            <div class="flex-grow flex flex-col items-center justify-center p-8 text-center">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center border-2 border-slate-100 border-dashed mb-4">
+                    <i class="fa-solid fa-chart-bar text-xl text-slate-300"></i>
+                </div>
+                <p class="text-sm font-bold text-slate-600">No Activity Yet</p>
+                <p class="text-[10px] text-slate-400 mt-2 max-w-[200px] leading-relaxed mb-4">Start checking project titles to generate analytics data.</p>
+                <a href="{{ url_for('home') }}" class="px-4 py-2 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-secondary transition-colors">
+                    Check Title
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Insights Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Critical Similarities -->
+        <div class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-50 flex items-center justify-between">
+                <h3 class="text-[10px] font-black text-rose-500 uppercase tracking-widest">Similarity Alerts</h3>
+                <i class="fa-solid fa-flag text-rose-400 text-xs"></i>
+            </div>
+            <div class="p-2 space-y-1">
+                {% for h in highest_similarity %}
+                <div class="p-3 hover:bg-slate-50 rounded-xl transition-all group">
+                    <div class="flex justify-between items-start mb-1 gap-2">
+                        <a href="{{ url_for('history_detail', id=h.id) }}" class="title-link text-xs font-bold text-primary line-clamp-1 group-hover:text-accent transition-colors">{{ h.entered_title }}</a>
+                        <span class="text-[9px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded tabular-nums">{{ "%.1f"|format(h.similarity_score * 100) }}%</span>
+                    </div>
+                    <p class="text-[9px] font-bold text-slate-400 line-clamp-1 italic tracking-tight">Match: {{ h.matched_title }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Unique -->
+        <div class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-50 flex items-center justify-between">
+                <h3 class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Validated Unique</h3>
+                <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+            </div>
+            <div class="p-2 space-y-1">
+                {% for u in recent_unique %}
+                <div class="p-3 hover:bg-slate-50 rounded-xl transition-all group">
+                    <div class="flex justify-between items-center mb-1 gap-2">
+                        <a href="{{ url_for('history_detail', id=u.id) }}" class="title-link text-xs font-bold text-primary line-clamp-1 group-hover:text-accent transition-colors">{{ u.entered_title }}</a>
+                        <span class="text-[9px] font-black text-slate-300 tabular-nums">{{ u.date }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Verified Original</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Conflicts -->
+        <div class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-50 flex items-center justify-between">
+                <h3 class="text-[10px] font-black text-amber-500 uppercase tracking-widest">Recent Conflicts</h3>
+                <i class="fa-solid fa-ban text-amber-400 text-xs"></i>
+            </div>
+            <div class="p-2 space-y-1">
+                {% for t in recent_taken %}
+                <div class="p-3 hover:bg-slate-50 rounded-xl transition-all group">
+                    <div class="flex justify-between items-center mb-1 gap-2">
+                        <a href="{{ url_for('history_detail', id=t.id) }}" class="title-link text-xs font-bold text-primary line-clamp-1 group-hover:text-accent transition-colors">{{ t.entered_title }}</a>
+                        <span class="text-[9px] font-black text-slate-300 tabular-nums">{{ t.date }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Similarity: {{ "%.1f"|format(t.similarity_score * 100) }}%</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if recent_activity or (unique_count + taken_count) > 0 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+{% if recent_activity %}
+<script>
+(function () {
+    const labels = {{ recent_activity | map(attribute='day') | list | tojson }};
+    const counts = {{ recent_activity | map(attribute='count') | list | tojson }};
+
+    if (counts.length > 0) {
+        const todayCount = counts[counts.length - 1];
+        const avgCount = (counts.reduce((a, b) => a + b, 0) / counts.length).toFixed(1);
+        
+        const elToday = document.getElementById('stat-today');
+        const elAvg = document.getElementById('stat-avg');
+        
+        if (elToday) elToday.textContent = todayCount;
+        if (elAvg) elAvg.textContent = avgCount;
+    }
+
+    const formatDate = (dateValue) => {
+        if (!dateValue) return '';
+        const d = new Date(dateValue.includes('T') ? dateValue : dateValue + 'T00:00:00');
+        if (isNaN(d.getTime())) return dateValue;
+        
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+    };
+
+    const ctx = document.getElementById('velocityChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                    borderColor: 'rgba(59, 130, 246, 0.7)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    hoverBackgroundColor: 'rgba(15, 23, 42, 0.85)',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { 
+                        enabled: true,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#94a3b8',
+                        bodyColor: '#f8fafc',
+                        titleFont: { size: 11, family: 'inherit', weight: 'bold' },
+                        bodyFont: { size: 13, family: 'inherit', weight: 'bold' },
+                        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(items) {
+                                return 'Date: ' + formatDate(items[0].label);
+                            },
+                            label: function(context) {
+                                return `Requests: ${context.parsed.y}`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 10, weight: 'bold' },
+                            maxRotation: 0,
+                            maxTicksLimit: 6,
+                            callback: function(val, index) {
+                                const label = this.getLabelForValue(val);
+                                const d = new Date(label.includes('T') ? label : label + 'T00:00:00');
+                                if (isNaN(d.getTime())) return label;
+                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                return `${d.getDate()} ${months[d.getMonth()]}`;
+                            }
+                        }
+                    },
+                    y: {
+                        display: true,
+                        beginAtZero: true,
+                        grid: { color: 'rgba(241, 245, 249, 1)' },
+                        border: { display: false, dash: [4, 4] },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 10, weight: 'bold' },
+                            precision: 0,
+                            padding: 10
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+    }
+})();
+</script>
+{% endif %}
+
+{% if (unique_count + taken_count) > 0 %}
+<script>
+(function() {
+    Chart.Tooltip.positioners.sidePosition = function(elements, eventPosition) {
+        if (!elements.length) {
+            return false;
+        }
+        const chart = this.chart;
+        const index = elements[0].index;
+        const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+        const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+        
+        // Add horizontal offset (outer radius + extra spacing)
+        const radius = chart.outerRadius || 90;
+        const offset = radius + 20;
+        
+        if (index === 0) { // Unique (Green) -> Right side
+            return {
+                x: centerX + offset,
+                y: centerY,
+                xAlign: 'left', // Render box to the right of caret
+                yAlign: 'center'
+            };
+        } else { // Conflicts (Red) -> Left side
+            return {
+                x: centerX - offset,
+                y: centerY,
+                xAlign: 'right', // Render box to the left of caret
+                yAlign: 'center'
+            };
+        }
+    };
+
+    const originalityCtx = document.getElementById('originalityChart');
+    if (originalityCtx) {
+        new Chart(originalityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Unique Projects', 'Identified Conflicts'],
+                datasets: [{
+                    data: [{{ unique_count }}, {{ taken_count }}],
+                    backgroundColor: ['#10b981', '#f43f5e'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        position: 'sidePosition',
+                        yAlign: 'center',
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        bodyColor: '#f8fafc',
+                        bodyFont: { size: 12, family: 'inherit', weight: 'bold' },
+                        padding: { top: 6, bottom: 6, left: 12, right: 12 },
+                        cornerRadius: 6,
+                        displayColors: false,
+                        callbacks: {
+                            title: function() { return null; },
+                            label: function(context) {
+                                if (context.dataIndex === 0) {
+                                    return `Unique: ${context.parsed}`;
+                                } else {
+                                    return `Conflicts: ${context.parsed}`;
+                                }
+                            }
+                        }
+                    },
+                    datalabels: {
+                        display: false
+                    }
+                },
+                animation: {
+                    animateScale: true,
+                    animateRotate: true,
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+})();
+</script>
+{% endif %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,426 @@
+{% extends "admin_layout.html" %}
+{% set active_page = 'group_members' %}
+
+{% block title %}Edit Member – {{ member.full_name }}{% endblock %}
+
+{% block content %}
+
+<!-- Back breadcrumb -->
+<div class="mb-8">
+    <a href="{{ url_for('admin_group_members') }}"
+       class="inline-flex items-center gap-2 text-slate-400 hover:text-primary font-bold text-sm transition-colors">
+        <i class="fa-solid fa-arrow-left text-xs"></i>
+        Back to Group Members
+    </a>
+</div>
+
+<!-- Page Header -->
+<div class="flex items-center gap-4 mb-10">
+    <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+        <i class="fa-solid fa-user-pen"></i>
+    </div>
+    <div>
+        <h1 class="text-3xl font-black text-primary tracking-tight">Edit Member</h1>
+        <p class="text-slate-400 text-sm font-medium mt-0.5">Updating profile for <span class="text-primary font-black">{{ member.full_name }}</span></p>
+    </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for cat, msg in messages %}
+    <div class="mb-6 flex items-center gap-3 px-5 py-4 rounded-xl font-semibold text-sm
+        {% if cat == 'success' %}bg-green-50 text-green-700 border border-green-200
+        {% else %}bg-red-50 text-red-700 border border-red-200{% endif %}">
+        <i class="fa-solid {% if cat == 'success' %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+
+<form method="POST" enctype="multipart/form-data" id="edit-form">
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- ═══════════════════════════════════════════════
+         LEFT COLUMN — Live Preview + Photo Adjustment
+         ═══════════════════════════════════════════════ -->
+    <div class="lg:col-span-1 space-y-5">
+
+        <!-- Circular Preview Card -->
+        <div class="bg-white rounded-[22px] border border-slate-200 shadow-sm p-8 text-center">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">Live Preview</p>
+
+            <!-- Circle frame -->
+            <div id="avatar-frame"
+                 class="mx-auto mb-4"
+                 style="width:160px; height:160px; border-radius:50%; overflow:hidden;
+                        border:4px solid #002045; box-shadow:0 8px 30px rgba(0,32,69,0.18);
+                        position:relative; background:#f1f5f9;">
+                <img
+                    id="photo-preview"
+                    src="{{ url_for('static', filename='images/' + member.photo) }}"
+                    alt="{{ member.full_name }}"
+                    style="width:100%; height:100%; object-fit:cover; object-position: center top; display:block;
+                           transform-origin: center center;
+                           transform: scale({{ member.image_scale | default(1, true) }})
+                                      translate({{ member.image_pos_x | default(0, true) }}%, {{ member.image_pos_y | default(0, true) }}%);
+                           transition: transform 0.1s ease;"
+                    onerror="this.src='https://ui-avatars.com/api/?name={{ member.full_name | urlencode }}&background=002045&color=fff&size=160'"
+                >
+            </div>
+
+            <p class="font-black text-primary text-base">{{ member.full_name }}</p>
+            <p class="text-slate-400 text-xs font-semibold mt-1">ID: {{ member.student_id }}</p>
+            <p class="text-accent text-xs font-bold mt-0.5">{{ member.department }}</p>
+        </div>
+
+        <!-- Photo Adjustment Sliders Card -->
+        <div class="bg-white rounded-[22px] border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h2 class="font-black text-primary text-sm">Photo Adjustment</h2>
+                    <p class="text-slate-400 text-[11px] mt-0.5">Zoom, reposition inside the circle</p>
+                </div>
+                <button type="button" id="reset-btn"
+                        class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500
+                               hover:text-rose-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-rose-50">
+                    <i class="fa-solid fa-rotate-left text-xs"></i>
+                    Reset
+                </button>
+            </div>
+
+            <div class="px-6 py-6 space-y-6">
+
+                <!-- Zoom -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass-plus text-accent text-xs"></i>
+                            Zoom
+                        </label>
+                        <span id="scale-display"
+                              class="text-xs font-black text-accent bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100">
+                            {{ "%.2f"|format(member.image_scale | default(1, true)) }}×
+                        </span>
+                    </div>
+                    <input type="range" id="scale-slider"
+                           min="1.0" max="3.0" step="0.01"
+                           value="{{ member.image_scale | default(1, true) }}"
+                           class="slider-track w-full">
+                    <!-- Hidden input submitted with form -->
+                    <input type="hidden" name="image_scale" id="image_scale"
+                           value="{{ member.image_scale | default(1, true) }}">
+                </div>
+
+                <!-- Move X -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fa-solid fa-left-right text-indigo-400 text-xs"></i>
+                            Move Horizontal
+                        </label>
+                        <span id="posx-display"
+                              class="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
+                            {{ member.image_pos_x | default(0, true) }}%
+                        </span>
+                    </div>
+                    <input type="range" id="posx-slider"
+                           min="-50" max="50" step="0.5"
+                           value="{{ member.image_pos_x | default(0, true) }}"
+                           class="slider-track w-full" style="--thumb-color:#6366f1;">
+                    <input type="hidden" name="image_pos_x" id="image_pos_x"
+                           value="{{ member.image_pos_x | default(0, true) }}">
+                </div>
+
+                <!-- Move Y -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fa-solid fa-up-down text-violet-400 text-xs"></i>
+                            Move Vertical
+                        </label>
+                        <span id="posy-display"
+                              class="text-xs font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded-lg border border-violet-100">
+                            {{ member.image_pos_y | default(0, true) }}%
+                        </span>
+                    </div>
+                    <input type="range" id="posy-slider"
+                           min="-50" max="50" step="0.5"
+                           value="{{ member.image_pos_y | default(0, true) }}"
+                           class="slider-track w-full" style="--thumb-color:#7c3aed;">
+                    <input type="hidden" name="image_pos_y" id="image_pos_y"
+                           value="{{ member.image_pos_y | default(0, true) }}">
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Photo Upload Card -->
+        <div class="bg-white rounded-[22px] border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                <h2 class="font-black text-primary text-sm">Replace Photo</h2>
+                <p class="text-slate-400 text-[11px] mt-0.5">Optional — uploads original file</p>
+            </div>
+            <div class="px-6 py-5">
+                <div id="photo-drop-zone"
+                     class="border-2 border-dashed border-slate-200 rounded-xl px-5 py-6 text-center cursor-pointer
+                            hover:border-accent hover:bg-blue-50/30 transition-all"
+                     onclick="document.getElementById('photo-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-300 mb-2"></i>
+                    <p class="text-slate-500 font-semibold text-xs">Click to upload new photo</p>
+                    <p class="text-slate-400 text-[10px] mt-0.5">JPEG, PNG, WEBP</p>
+                    <p id="file-name-display" class="mt-2 text-accent font-bold text-xs hidden"></p>
+                </div>
+                <input id="photo-input" name="photo" type="file" accept="image/*" class="hidden">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         RIGHT COLUMN — Member Info Form
+         ═══════════════════════════════════════════════ -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-[22px] border border-slate-200 shadow-sm overflow-hidden">
+
+            <div class="px-8 py-6 border-b border-slate-100 bg-slate-50">
+                <h2 class="font-black text-primary text-base">Member Information</h2>
+                <p class="text-slate-400 text-xs mt-0.5">All fields are required.</p>
+            </div>
+
+            <div class="px-8 py-8 space-y-6">
+
+                <!-- Full Name -->
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2" for="full_name">
+                        Full Name
+                    </label>
+                    <input id="full_name" name="full_name" type="text"
+                           value="{{ member.full_name }}" required
+                           class="field-input"
+                           placeholder="Enter full name">
+                </div>
+
+                <!-- Student ID -->
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2" for="student_id">
+                        Student ID
+                    </label>
+                    <input id="student_id" name="student_id" type="text"
+                           value="{{ member.student_id }}" required
+                           class="field-input"
+                           placeholder="e.g. 26166">
+                </div>
+
+                <!-- Department -->
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2" for="department">
+                        Department
+                    </label>
+                    <input id="department" name="department" type="text"
+                           value="{{ member.department }}" required
+                           class="field-input"
+                           placeholder="e.g. Information Technology">
+                </div>
+
+                <!-- WhatsApp -->
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2" for="whatsapp">
+                        WhatsApp
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-500 text-sm">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </span>
+                        <input id="whatsapp" name="whatsapp" type="text"
+                               value="{{ member.whatsapp }}" required pattern="[0-9]+"
+                               class="field-input pl-10"
+                               placeholder="e.g. 252611000000">
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2" for="email">
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-accent text-sm">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input id="email" name="email" type="email"
+                               value="{{ member.email }}" required
+                               class="field-input pl-10"
+                               placeholder="member@example.com">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                <a href="{{ url_for('admin_group_members') }}"
+                   class="inline-flex items-center gap-2 text-slate-500 hover:text-primary font-bold text-sm transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 bg-primary text-white font-black text-sm px-7 py-3 rounded-xl
+                               hover:bg-accent transition-colors shadow-lg shadow-primary/20 active:scale-95">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Save Changes
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    /* ── Slider track styling ── */
+    .slider-track {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 9999px;
+        background: linear-gradient(to right, #0056b3 0%, #0056b3 var(--pct, 0%), #e2e8f0 var(--pct, 0%));
+        outline: none;
+        cursor: pointer;
+        transition: background 0.1s;
+    }
+    .slider-track::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--thumb-color, #0056b3);
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        cursor: grab;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .slider-track::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.25); }
+    .slider-track::-moz-range-thumb {
+        width: 20px; height: 20px; border-radius: 50%;
+        background: var(--thumb-color, #0056b3);
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        cursor: grab;
+    }
+    /* ── Form field ── */
+    .field-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #002045;
+        font-weight: 600;
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: inherit;
+    }
+    .field-input.pl-10 { padding-left: 2.5rem; }
+    .field-input:focus {
+        border-color: #0056b3;
+        box-shadow: 0 0 0 3px rgba(0,86,179,0.12);
+    }
+</style>
+
+<script>
+(function () {
+    // ── Elements ──
+    const preview  = document.getElementById('photo-preview');
+    const scaleSlider = document.getElementById('scale-slider');
+    const posxSlider  = document.getElementById('posx-slider');
+    const posySlider  = document.getElementById('posy-slider');
+    const scaleHidden = document.getElementById('image_scale');
+    const posxHidden  = document.getElementById('image_pos_x');
+    const posyHidden  = document.getElementById('image_pos_y');
+    const scaleDisp   = document.getElementById('scale-display');
+    const posxDisp    = document.getElementById('posx-display');
+    const posyDisp    = document.getElementById('posy-display');
+
+    // ── Apply transform to the preview image ──
+    function applyTransform() {
+        const s  = parseFloat(scaleSlider.value);
+        const px = parseFloat(posxSlider.value);
+        const py = parseFloat(posySlider.value);
+
+        preview.style.transform = `scale(${s}) translate(${px}%, ${py}%)`;
+
+        // Update hidden inputs
+        scaleHidden.value = s;
+        posxHidden.value  = px;
+        posyHidden.value  = py;
+
+        // Update labels
+        scaleDisp.textContent = s.toFixed(2) + '×';
+        posxDisp.textContent  = (px >= 0 ? '+' : '') + px.toFixed(1) + '%';
+        posyDisp.textContent  = (py >= 0 ? '+' : '') + py.toFixed(1) + '%';
+
+        // Update slider fill %
+        updateFill(scaleSlider, 1.0, 3.0);
+        updateFill(posxSlider,  -50, 50);
+        updateFill(posySlider,  -50, 50);
+    }
+
+    // Fill track up to thumb position
+    function updateFill(slider, min, max) {
+        const pct = ((slider.value - min) / (max - min)) * 100;
+        slider.style.setProperty('--pct', pct + '%');
+    }
+
+    // ── Bind slider events ──
+    [scaleSlider, posxSlider, posySlider].forEach(s => {
+        s.addEventListener('input', applyTransform);
+    });
+
+    // ── Reset button ──
+    document.getElementById('reset-btn').addEventListener('click', function () {
+        scaleSlider.value = 1.0;
+        posxSlider.value  = 0;
+        posySlider.value  = 0;
+        applyTransform();
+    });
+
+    // ── Photo upload: preview new image + reset sliders ──
+    const fileInput       = document.getElementById('photo-input');
+    const dropZone        = document.getElementById('photo-drop-zone');
+    const fileNameDisplay = document.getElementById('file-name-display');
+
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        fileNameDisplay.textContent = '✓ ' + file.name;
+        fileNameDisplay.classList.remove('hidden');
+        dropZone.classList.add('border-green-400', 'bg-green-50');
+        dropZone.classList.remove('border-slate-200');
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            // Reset sliders when new photo is chosen
+            scaleSlider.value = 1.0;
+            posxSlider.value  = 0;
+            posySlider.value  = 0;
+            applyTransform();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ── Init on page load ──
+    applyTransform();
+})();
+</script>
+{% endblock %}

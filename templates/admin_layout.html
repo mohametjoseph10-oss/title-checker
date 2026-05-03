@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}Admin Dashboard{% endblock %} - Title Checker</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#002045",
+                        "accent": "#0056b3",
+                        "surface": "#ffffff"
+                    },
+                    borderRadius: {
+                        "academic": "18px"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; font-family: 'Outfit', sans-serif; }
+        .nav-item { transition: all 0.2s ease; }
+        .nav-item:hover { background-color: rgba(0, 32, 69, 0.05); }
+        .nav-item.active { background-color: #002045; color: white; box-shadow: 0 4px 12px rgba(0, 32, 69, 0.15); }
+        .nav-item.active i { color: white !important; }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .animate-bounce-subtle {
+            animation: bounce-subtle 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased text-slate-800">
+
+{% set active_page = active_page|default('dashboard') %}
+
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 flex flex-col h-full bg-white border-r border-slate-200 w-64 z-50">
+    <div class="px-7 py-8">
+        <div class="flex items-center gap-3 mb-1">
+            <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-graduation-cap text-sm"></i>
+            </div>
+            <span class="text-lg font-black text-primary tracking-tighter uppercase">AdminPanel</span>
+        </div>
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-0.5">Title Verification System</p>
+    </div>
+    
+    <nav class="flex-1 px-4 space-y-1.5 sidebar-scroll overflow-y-auto">
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl group {% if active_page == 'dashboard' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_dashboard') }}">
+            <i class="fa-solid fa-gauge-high text-base w-5 {% if active_page != 'dashboard' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+            <span class="text-sm font-bold">Dashboard</span>
+        </a>
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl group {% if active_page == 'titles' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_titles_page') }}">
+            <i class="fa-solid fa-boxes-stacked text-base w-5 {% if active_page != 'titles' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+            <span class="text-sm font-bold">Project Registry</span>
+        </a>
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl group {% if active_page == 'analytics' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_analytics_page') }}">
+            <i class="fa-solid fa-chart-line text-base w-5 {% if active_page != 'analytics' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+            <span class="text-sm font-bold">Analytics</span>
+        </a>
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl group {% if active_page == 'group_members' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_group_members') }}">
+            <i class="fa-solid fa-users text-base w-5 {% if active_page != 'group_members' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+            <span class="text-sm font-bold">Group Members</span>
+        </a>
+        {% if session.get('role') == 'Super Admin' %}
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl group {% if active_page == 'users' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_users_page') }}">
+            <i class="fa-solid fa-user-group text-base w-5 {% if active_page != 'users' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+            <span class="text-sm font-bold">User Management</span>
+        </a>
+        {% endif %}
+        <a class="nav-item flex items-center justify-between px-4 py-3 rounded-xl group {% if active_page == 'messages' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_messages_page') }}">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-envelope text-base w-5 {% if active_page != 'messages' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+                <span class="text-sm font-bold">Messages</span>
+            </div>
+            <span id="unread-badge" class="hidden px-2 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full shadow-sm shadow-rose-200 animate-pulse">0</span>
+        </a>
+
+        {% if session.get('role') == 'Super Admin' %}
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl group {% if active_page == 'settings' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_settings_page') }}">
+            <i class="fa-solid fa-gear text-base w-5 {% if active_page != 'settings' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+            <span class="text-sm font-bold">Settings</span>
+        </a>
+        {% endif %}
+    </nav>
+
+    <div class="px-4 py-6 border-t border-slate-100 space-y-1">
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl group {% if active_page == 'support' %}active{% else %}text-slate-500{% endif %}" href="{{ url_for('admin_support_page') }}">
+            <i class="fa-solid fa-circle-question text-base w-5 {% if active_page != 'support' %}text-slate-400 group-hover:text-primary{% endif %}"></i>
+            <span class="text-sm font-bold">Support</span>
+        </a>
+        <a class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50" href="{{ url_for('admin_logout') }}">
+            <i class="fa-solid fa-right-from-bracket text-base w-5"></i>
+            <span class="text-sm font-bold">Logout</span>
+        </a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="ml-64 p-8 min-h-screen">
+    <div class="max-w-[1200px] mx-auto">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+<script>
+    async function updateUnreadCount() {
+        try {
+            const response = await fetch("{{ url_for('unread_messages_count') }}");
+            const data = await response.json();
+            const badge = document.getElementById('unread-badge');
+            
+            if (data.count > 0) {
+                badge.innerText = data.count;
+                badge.classList.remove('hidden');
+                
+                // Show dashboard alert if on dashboard
+                const dashboardAlert = document.getElementById('unread-dashboard-alert');
+                if (dashboardAlert) {
+                    const countSpan = document.getElementById('unread-dashboard-count');
+                    if (countSpan) countSpan.innerText = data.count;
+                    dashboardAlert.classList.remove('hidden');
+                }
+            } else {
+                badge.classList.add('hidden');
+                const dashboardAlert = document.getElementById('unread-dashboard-alert');
+                if (dashboardAlert) dashboardAlert.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error("Failed to fetch unread count:", error);
+        }
+    }
+
+    // Poll every 10 seconds
+    setInterval(updateUnreadCount, 10000);
+    // Initial check
+    updateUnreadCount();
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

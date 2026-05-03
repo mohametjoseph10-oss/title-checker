@@ -1,0 +1,409 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "users" %}
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in space-y-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-primary tracking-tight">User Management</h1>
+            <p class="text-sm text-slate-500 font-medium">Manage institutional admin accounts, roles, and access permissions.</p>
+        </div>
+        <button onclick="toggleModal('addUserModal')" class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-academic font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95">
+            <i class="fa-solid fa-user-plus text-xs"></i>
+            Add New Admin
+        </button>
+    </header>
+
+    <!-- Stats Grid -->
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5eaf3;
+            border-radius: 18px;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Role Badge Styling */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            border: none;
+            cursor: pointer;
+            appearance: none;
+            text-align: center;
+            transition: all 0.2s ease;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        .role-badge:focus { outline: none; }
+        .role-badge.super-admin { background: #f3e8ff; color: #7c3aed; }
+        .role-badge.admin { background: #e0f2fe; color: #0369a1; }
+        .role-badge.viewer { background: #f1f5f9; color: #64748b; }
+        .role-badge:hover { filter: brightness(0.95); }
+
+        /* Error Shake Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+    </style>
+
+    <div class="stats-grid">
+        <!-- Total Admins -->
+        <div class="stat-card">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-users text-lg"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-primary leading-none">{{ stats.total }}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total Admins</p>
+            </div>
+        </div>
+
+        <!-- Super Admins -->
+        <div class="stat-card">
+            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-shield-halved text-lg"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-primary leading-none">{{ stats.super }}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Super Admins</p>
+            </div>
+        </div>
+
+        <!-- Standard Admins -->
+        <div class="stat-card">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-user-check text-lg"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-primary leading-none">{{ stats.admin }}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Standard Admins</p>
+            </div>
+        </div>
+
+        <!-- Viewers -->
+        <div class="stat-card">
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-eye text-lg"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-primary leading-none">{{ stats.viewer }}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Viewers</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table Section -->
+    <section class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+            <h3 class="font-bold text-primary flex items-center gap-2 text-sm uppercase tracking-wider">
+                <i class="fa-solid fa-id-badge text-slate-400 text-base"></i>
+                Institutional Personnel
+            </h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">ID</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">User Account</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">System Role</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for u in users %}
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-6 py-4 text-xs font-bold text-slate-300">#{{ u.id }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs uppercase border border-white shadow-sm">
+                                    {{ u.email[0] }}
+                                </div>
+                                <span class="text-sm font-bold text-primary">{{ u.email }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <select onchange="updateRole({{ u.id }}, this.value)" class="role-badge {% if u.role == 'Super Admin' %}super-admin{% elif u.role == 'Admin' %}admin{% else %}viewer{% endif %}">
+                                    <option value="Super Admin" {% if u.role == 'Super Admin' %}selected{% endif %}>Super Admin</option>
+                                    <option value="Admin" {% if u.role == 'Admin' %}selected{% endif %}>Admin</option>
+                                    <option value="Viewer" {% if u.role == 'Viewer' %}selected{% endif %}>Viewer</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button onclick="openEditModal({{ u.id }})" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-accent hover:bg-accent/5 rounded-lg transition-all opacity-0 group-hover:opacity-100" title="Edit User">
+                                    <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                </button>
+                                <button onclick="deleteUser({{ u.id }})" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100" title="Delete Account">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- Modals & Feedback -->
+<div id="addUserModal" class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-academic shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-95 duration-300">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+            <h3 class="font-extrabold text-primary flex items-center gap-2 text-sm uppercase tracking-wider">
+                <i class="fa-solid fa-user-plus text-base"></i>
+                New Admin Account
+            </h3>
+            <button onclick="toggleModal('addUserModal')" class="text-slate-400 hover:text-rose-500 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <form id="addUserForm" onsubmit="submitAddUser(event)" class="p-7 space-y-5" autocomplete="off">
+            <!-- Dummy inputs to prevent browser autofill -->
+            <input type="text" name="fake_email" style="display:none" aria-hidden="true">
+            <input type="password" name="fake_password" style="display:none" aria-hidden="true">
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Institutional Email</label>
+                <input type="email" id="newEmail" name="new_admin_email" autocomplete="off" required class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-sm font-medium transition-all" placeholder="admin@university.edu">
+            </div>
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Access Password</label>
+                <input type="password" id="newPassword" name="new_admin_password" autocomplete="new-password" required class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-sm font-medium transition-all" placeholder="••••••••">
+            </div>
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Designated Role</label>
+                <select id="newRole" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-sm font-bold cursor-pointer transition-all">
+                    <option value="Admin">Standard Admin</option>
+                    <option value="Viewer">Viewer (Read Only)</option>
+                    <option value="Super Admin">Super Admin</option>
+                </select>
+            </div>
+            <div class="pt-4 flex gap-3">
+                <button type="button" onclick="toggleModal('addUserModal')" class="flex-1 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-academic hover:bg-slate-200 transition-all text-sm">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-3 bg-primary text-white font-bold rounded-academic shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95 text-sm">Create Account</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editUserModal" class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-academic shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-95 duration-300">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+            <h3 class="font-extrabold text-primary flex items-center gap-2 text-sm uppercase tracking-wider">
+                <i class="fa-solid fa-user-pen text-base"></i>
+                Edit Admin Account
+            </h3>
+            <button onclick="toggleModal('editUserModal')" class="text-slate-400 hover:text-rose-500 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <form id="editUserForm" onsubmit="submitEditUser(event)" class="p-7 space-y-5" autocomplete="off">
+            <input type="hidden" id="editUserId">
+            <div id="editUserError" class="hidden p-3 bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold rounded-academic animate-shake"></div>
+            
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Institutional Email</label>
+                <input type="email" id="editEmail" readonly class="w-full px-4 py-3 bg-slate-100 border border-slate-100 rounded-academic text-slate-500 outline-none text-sm font-medium cursor-not-allowed" placeholder="admin@university.edu">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">New Password</label>
+                    <input type="password" id="editPassword" autocomplete="new-password" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-sm font-medium transition-all" placeholder="Enter new password">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Confirm Password</label>
+                    <input type="password" id="editConfirmPassword" autocomplete="new-password" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-sm font-medium transition-all" placeholder="Confirm new password">
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">System Role</label>
+                <select id="editRole" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-sm font-bold cursor-pointer transition-all">
+                    <option value="Super Admin">Super Admin</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Viewer">Viewer</option>
+                </select>
+            </div>
+            
+            <div class="pt-4 flex gap-3">
+                <button type="button" onclick="toggleModal('editUserModal')" class="flex-1 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-academic hover:bg-slate-200 transition-all text-sm">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-3 bg-primary text-white font-bold rounded-academic shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95 text-sm">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="toast" class="fixed bottom-8 right-8 bg-primary text-white px-6 py-4 rounded-academic shadow-2xl flex items-center gap-3 transform translate-y-24 transition-all duration-500 opacity-0 z-[100]">
+    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+        <i class="fa-solid fa-check-double text-white text-xs"></i>
+    </div>
+    <span id="toastMsg" class="text-sm font-bold">Action successful</span>
+</div>
+
+<script>
+function toggleModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.toggle('hidden');
+    if(!modal.classList.contains('hidden')) {
+        // Clear fields when opening the creation modal
+        if(id === 'addUserModal') {
+            const form = document.getElementById('addUserForm');
+            if(form) {
+                form.reset();
+                document.getElementById('newEmail').value = '';
+                document.getElementById('newPassword').value = '';
+            }
+        }
+        setTimeout(() => modal.firstElementChild.classList.remove('scale-95'), 10);
+    } else {
+        modal.firstElementChild.classList.add('scale-95');
+    }
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').innerText = msg;
+    toast.classList.remove('translate-y-24', 'opacity-0');
+    setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+    }, 3000);
+}
+
+async function submitAddUser(e) {
+    e.preventDefault();
+    const email = document.getElementById('newEmail').value;
+    const password = document.getElementById('newPassword').value;
+    const role = document.getElementById('newRole').value;
+    
+    const res = await fetch('/admin/users', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password, role})
+    });
+    const data = await res.json();
+    if(res.ok && data.success) {
+        showToast("User account created successfully");
+        setTimeout(() => window.location.reload(), 1000);
+    } else {
+        alert(data.error || "Failed to add user.");
+    }
+}
+
+async function openEditModal(id) {
+    const errorDiv = document.getElementById('editUserError');
+    errorDiv.classList.add('hidden');
+    errorDiv.innerText = '';
+    
+    const res = await fetch(`/admin/edit_user/${id}`);
+    const data = await res.json();
+    
+    if (res.ok && data.success) {
+        document.getElementById('editUserId').value = data.user.id;
+        document.getElementById('editEmail').value = data.user.email;
+        document.getElementById('editRole').value = data.user.role;
+        document.getElementById('editPassword').value = '';
+        document.getElementById('editConfirmPassword').value = '';
+        toggleModal('editUserModal');
+    } else {
+        alert(data.error || "Failed to fetch user data.");
+    }
+}
+
+async function submitEditUser(e) {
+    e.preventDefault();
+    const id = document.getElementById('editUserId').value;
+    const role = document.getElementById('editRole').value;
+    const password = document.getElementById('editPassword').value;
+    const confirm_password = document.getElementById('editConfirmPassword').value;
+    const errorDiv = document.getElementById('editUserError');
+    
+    errorDiv.classList.add('hidden');
+    errorDiv.innerText = '';
+    
+    const res = await fetch(`/admin/edit_user/${id}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({role, password, confirm_password})
+    });
+    
+    const data = await res.json();
+    if (res.ok && data.success) {
+        showToast("User updated successfully");
+        setTimeout(() => window.location.href = '/admin/users', 1000);
+    } else {
+        errorDiv.innerText = data.error || "Failed to update user.";
+        errorDiv.classList.remove('hidden');
+        // Re-trigger animation
+        errorDiv.classList.remove('animate-shake');
+        void errorDiv.offsetWidth; // trigger reflow
+        errorDiv.classList.add('animate-shake');
+    }
+}
+
+async function updateRole(id, role) {
+    const res = await fetch('/admin/users/update-role/' + id, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({role})
+    });
+    const data = await res.json();
+    if(res.ok && data.success) {
+        showToast("User role updated successfully");
+        setTimeout(() => window.location.reload(), 1500);
+    } else {
+        alert(data.error || "Failed to update role.");
+        window.location.reload(); 
+    }
+}
+
+async function deleteUser(id) {
+    if (!confirm("Revoke all access for this user? This action cannot be undone.")) return;
+    const res = await fetch('/admin/users/' + id, { method: 'DELETE' });
+    const data = await res.json();
+    if(res.ok && data.success) {
+        showToast("Access revoked successfully");
+        setTimeout(() => window.location.reload(), 1000);
+    } else {
+        alert(data.error || "Failed to revoke access.");
+    }
+}
+</script>
+{% endblock %}

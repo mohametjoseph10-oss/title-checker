@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Institutional Repository - Project Title Checker System{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 pt-12 pb-20 animate-fade-in">
+    <!-- Header section with stats -->
+    <header class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+        <div>
+            <div class="inline-flex items-center gap-2 bg-accent/5 text-accent px-4 py-1.5 rounded-full mb-4">
+                <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span>
+                <span class="text-[10px] font-black uppercase tracking-widest">Digital Archive</span>
+            </div>
+            <h1 class="text-4xl font-black text-primary tracking-tight mb-2">Institutional Repository</h1>
+            <p class="text-sm font-medium text-slate-500 max-w-lg leading-relaxed">Access the comprehensive read-only archive of verified and validated academic project titles from across the institution.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-academic border border-slate-100 shadow-sm flex items-center gap-5 min-w-[240px]">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-chart-simple text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Indexed</p>
+                <p class="text-2xl font-black text-primary leading-none tabular-nums">{{ total_titles }} <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Records</span></p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Repository Content -->
+    <section class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden">
+        <!-- Data Toolbar & Search -->
+        <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/30">
+            <form id="filterForm" action="/repository" method="GET" class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- Search Bar -->
+                <div class="w-full md:w-1/2 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search project title by keyword..." 
+                        class="w-full bg-white border border-slate-200 py-3 pl-10 pr-4 rounded-academic text-sm font-bold text-primary focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all placeholder:font-medium placeholder:text-slate-400 shadow-sm">
+                    {% if q %}
+                    <a href="/repository" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Remove Sort Dropdown as sorting is now in headers -->
+            </form>
+        </div>
+        
+        <!-- Data Grid -->
+        <!-- Data Grid (Desktop) -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left" id="titlesTable">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32 border-b border-slate-100 hover:text-primary transition-colors cursor-pointer group">
+                            <a href="/repository?q={{ q }}&sort=id&order={% if sort_col == 'id' and order_dir == 'asc' %}desc{% else %}asc{% endif %}" class="flex items-center gap-2 w-full">
+                                ID
+                                {% if sort_col == 'id' %}
+                                    <i class="fa-solid fa-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-[10px] text-accent"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-sort text-[10px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 hover:text-primary transition-colors cursor-pointer group">
+                            <a href="/repository?q={{ q }}&sort=title&order={% if sort_col == 'title' and order_dir == 'asc' %}desc{% else %}asc{% endif %}" class="flex items-center gap-2 w-full">
+                                Academic Project Title
+                                {% if sort_col == 'title' %}
+                                    <i class="fa-solid fa-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-[10px] text-accent"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-sort text-[10px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-40 border-b border-slate-100 text-right">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for t in titles %}
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-8 py-6 text-[11px] font-bold text-slate-400 font-mono tabular-nums">#{{ t.id }}</td>
+                        <td class="px-8 py-6">
+                            <p class="text-sm font-bold text-primary leading-relaxed group-hover:text-accent transition-colors search-text">{{ t.title }}</p>
+                        </td>
+                        <td class="px-8 py-6 text-right">
+                            <a href="/check?title={{ t.title | urlencode }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-50 hover:text-accent transition-all shadow-sm opacity-0 group-hover:opacity-100">
+                                <i class="fa-solid fa-microscope"></i> Check
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Data Grid (Mobile Cards) -->
+        <div class="md:hidden">
+            {% for t in titles %}
+            <div class="p-6 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-navy/5 text-navy uppercase tracking-tighter">
+                        Project #{{ t.id }}
+                    </span>
+                    <a href="/check?title={{ t.title | urlencode }}" class="text-accent text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="fa-solid fa-microscope"></i> Verify
+                    </a>
+                </div>
+                <h3 class="text-[15px] font-bold text-primary leading-relaxed search-text">
+                    {{ t.title }}
+                </h3>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Empty State (Unified for both) -->
+        {% if not titles %}
+        <div class="px-8 py-32 text-center">
+            <div class="flex flex-col items-center opacity-30">
+                <i class="fa-solid fa-folder-open text-5xl mb-5 text-slate-400"></i>
+                <p class="text-sm font-black uppercase tracking-widest">
+                    {% if q %}No matching project titles found.{% else %}Archive Currently Inactive{% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="px-8 py-6 border-t border-slate-100 bg-slate-50/30 flex items-center justify-between">
+            <p class="text-xs font-bold text-slate-400 hidden sm:block">Page {{ page }} of {{ total_pages }}</p>
+            <div class="flex items-center gap-2">
+                {% if page > 1 %}
+                <a href="/repository?q={{ q }}&sort={{ sort_col }}&order={{ order_dir }}&page={{ page - 1 }}" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-primary uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Prev
+                </a>
+                {% else %}
+                <button disabled class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-black text-slate-300 uppercase tracking-widest cursor-not-allowed">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Prev
+                </button>
+                {% endif %}
+                
+                {% if page < total_pages %}
+                <a href="/repository?q={{ q }}&sort={{ sort_col }}&order={{ order_dir }}&page={{ page + 1 }}" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-primary uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+                    Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                </a>
+                {% else %}
+                <button disabled class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-black text-slate-300 uppercase tracking-widest cursor-not-allowed">
+                    Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Highlight searched keyword
+    document.addEventListener('DOMContentLoaded', () => {
+        const query = "{{ q | replace('\"', '\\\"') | replace('\\', '\\\\') }}".trim();
+        if (!query) return;
+        
+        // Escape regex special characters
+        const escapeRegExp = (string) => {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        };
+        
+        const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+        document.querySelectorAll('.search-text').forEach(el => {
+            const original = el.innerHTML;
+            el.innerHTML = original.replace(regex, '<mark class="bg-amber-100 text-amber-900 px-1 rounded">$1</mark>');
+        });
+    });
+</script>
+{% endblock %}
+
+
+{% block head %}
+<style>
+    .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

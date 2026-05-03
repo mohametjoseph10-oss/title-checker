@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Methodology | Project Title Checker{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 pt-12 pb-20">
+    <!-- Hero Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center mb-16">
+        <div class="space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-100">
+                <i class="fa-solid fa-microchip text-[10px]"></i>
+                ML + NLP Workflow
+            </div>
+            <h1 class="text-4xl font-extrabold text-navy leading-tight">System Methodology</h1>
+            <p class="text-md text-slate-500 leading-relaxed max-w-lg">
+                Discover how our machine learning-based system analyzes academic project titles using Natural Language Processing (NLP) to ensure originality and academic integrity.
+            </p>
+            <div class="flex items-center gap-3 pt-2">
+                <div class="flex -space-x-2">
+                    <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">NLP</div>
+                    <div class="w-8 h-8 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">ML</div>
+                </div>
+                <span class="text-[11px] font-bold text-slate-400">Validated by Institutional Standards</span>
+            </div>
+        </div>
+
+        <!-- Hero Visual Card -->
+        <div class="bg-navy p-6 rounded-2xl shadow-xl relative overflow-hidden text-white">
+            <div class="relative z-10 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-code text-sm"></i>
+                    </div>
+                    <div class="h-px flex-1 mx-3 bg-white/10"></div>
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-brain text-sm"></i>
+                    </div>
+                    <div class="h-px flex-1 mx-3 bg-white/10"></div>
+                    <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-check-double text-sm"></i>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest">Title Input</p>
+                    <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest">NLP Logic</p>
+                    <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest">Decision</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-center gap-3">
+                    <span class="text-white font-mono text-xs italic">"Network Security Analysis..."</span>
+                    <i class="fa-solid fa-arrow-trend-up text-emerald-400 text-sm"></i>
+                    <span class="text-emerald-400 font-bold text-sm">Unique Result</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Card -->
+    <section class="max-w-4xl mx-auto mb-16">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-6">
+            <div class="p-3 bg-blue-50 rounded-xl text-blue-600 shrink-0">
+                <i class="fa-solid fa-terminal text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-navy mb-1">Technical Overview</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Our system understands context, synonyms, and intent using NLP techniques to provide accurate similarity analysis. Unlike basic keyword search, we ensure academic integrity by evaluating semantic depth against the entire repository.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Flow -->
+    <section class="mb-16">
+        <div class="text-center mb-10">
+            <h2 class="text-2xl font-extrabold text-navy">Systematic Analysis Workflow</h2>
+            <p class="text-sm text-slate-400">Processing academic titles through six distinct validation stages.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm group hover:border-navy/20 transition-all h-full">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-navy group-hover:text-white transition-colors">01</div>
+                    <h4 class="text-sm font-bold text-navy">User Input</h4>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">System captures the proposed academic project title from the secure web interface.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm group hover:border-navy/20 transition-all h-full">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-navy group-hover:text-white transition-colors">02</div>
+                    <h4 class="text-sm font-bold text-navy">Text Preprocessing</h4>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">Titles are normalized by removing noise, converting to lowercase, and handling special characters.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm group hover:border-navy/20 transition-all h-full">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-navy group-hover:text-white transition-colors">03</div>
+                    <h4 class="text-sm font-bold text-navy">Data Retrieval</h4>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">Efficiently fetching existing records from the MySQL database for historical comparison.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm group hover:border-navy/20 transition-all h-full">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-navy group-hover:text-white transition-colors">04</div>
+                    <h4 class="text-sm font-bold text-navy">Feature Extraction</h4>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">SentenceTransformer converts titles into numerical vector features for mathematical analysis.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm group hover:border-navy/20 transition-all h-full">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-navy group-hover:text-white transition-colors">05</div>
+                    <h4 class="text-sm font-bold text-navy">Similarity Calculation</h4>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">Cosine Similarity calculates the semantic distance between the current input and the dataset.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm group hover:border-navy/20 transition-all h-full">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-navy group-hover:text-white transition-colors">06</div>
+                    <h4 class="text-sm font-bold text-navy">Final Decision</h4>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">Decision logic categorizes the result based on predefined threshold rules.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Stack -->
+    <section class="mb-16">
+        <h2 class="text-xl font-bold text-navy text-center mb-8">Technology Stack</h2>
+        <div class="flex flex-wrap justify-center gap-4">
+            <div class="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm text-center min-w-[140px]">
+                <i class="fa-solid fa-bolt text-orange-500 mb-2 block text-lg"></i>
+                <p class="text-xs font-bold text-navy">Flask</p>
+            </div>
+            <div class="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm text-center min-w-[140px]">
+                <i class="fa-solid fa-database text-blue-500 mb-2 block text-lg"></i>
+                <p class="text-xs font-bold text-navy">MySQL</p>
+            </div>
+            <div class="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm text-center min-w-[140px]">
+                <i class="fa-solid fa-brain text-purple-500 mb-2 block text-lg"></i>
+                <p class="text-xs font-bold text-navy">Sentence Transformers</p>
+            </div>
+            <div class="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm text-center min-w-[140px]">
+                <i class="fa-solid fa-calculator text-emerald-500 mb-2 block text-lg"></i>
+                <p class="text-xs font-bold text-navy">Cosine Similarity</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Decision Rule -->
+    <section class="max-w-3xl mx-auto mb-16">
+        <div class="bg-navy rounded-2xl p-8 text-white relative overflow-hidden shadow-lg">
+            <div class="relative z-10 flex flex-col md:flex-row items-center gap-10">
+                <div class="flex-1">
+                    <h3 class="text-xl font-extrabold mb-2">Similarity Threshold</h3>
+                    <p class="text-white/60 text-xs leading-relaxed">
+                        To maintain academic standards, we use a 70% similarity threshold. This balance prevents duplicate research while allowing for common institutional terminology.
+                    </p>
+                </div>
+                <div class="shrink-0 space-y-3 w-full md:w-48">
+                    <div class="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+                        <span class="text-[10px] font-bold text-red-400">&gt; 70%</span>
+                        <span class="text-[9px] font-black bg-red-500 px-2 py-0.5 rounded uppercase">Taken</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+                        <span class="text-[10px] font-bold text-emerald-400">&le; 70%</span>
+                        <span class="text-[9px] font-black bg-emerald-500 px-2 py-0.5 rounded uppercase">Unique</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="max-w-2xl mx-auto text-center">
+        <h2 class="text-2xl font-extrabold text-navy mb-6">Ready to Validate Your Project?</h2>
+        <button onclick="window.location.href='{{ url_for('check_page') }}'" class="bg-navy text-white px-10 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mx-auto text-sm">
+            Check My Title Now
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+    </section>
+</div>
+{% endblock %}

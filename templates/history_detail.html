@@ -1,0 +1,137 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "dashboard" %}
+{% block title %}History Detail{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in space-y-6 max-w-5xl mx-auto pb-10">
+    <!-- Header with Back Button and Action Links -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('admin_dashboard') }}" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-primary hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm shrink-0">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-extrabold text-primary tracking-tight">Title Verification Detail</h1>
+                <p class="text-sm text-slate-500 font-medium mt-0.5">Full information for the selected verification record</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3 ml-14 md:ml-0">
+            <a href="{{ url_for('admin_dashboard') }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary rounded-academic text-sm font-bold shadow-sm transition-all flex items-center gap-2">
+                <i class="fa-solid fa-table-columns"></i>
+                Back to Dashboard
+            </a>
+            <a href="{{ url_for('admin_analytics_page') }}" class="px-4 py-2 bg-primary hover:bg-slate-800 text-white rounded-academic text-sm font-bold shadow-md shadow-primary/20 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie"></i>
+                View Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column: Titles (Spans 2 columns) -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Submitted Title Card -->
+            <div class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+                <div class="p-5 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="font-bold text-primary flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <i class="fa-solid fa-file-signature text-blue-500 text-base"></i>
+                        Submitted Title
+                    </h3>
+                </div>
+                <div class="p-8">
+                    <p class="text-xl md:text-2xl font-extrabold text-slate-800 leading-relaxed break-words">{{ item.entered_title }}</p>
+                </div>
+            </div>
+
+            <!-- Matched Title Card -->
+            <div class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow relative">
+                <!-- Visual Connector -->
+                <div class="absolute -top-6 left-10 w-0.5 h-6 bg-slate-200 z-10 hidden lg:block"></div>
+                
+                <div class="p-5 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="font-bold text-primary flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <i class="fa-solid fa-database text-indigo-500 text-base"></i>
+                        Closest Database Match
+                    </h3>
+                </div>
+                <div class="p-8">
+                    {% if item.matched_title and item.matched_title != 'None' %}
+                        <p class="text-lg md:text-xl font-medium text-slate-600 leading-relaxed break-words">{{ item.matched_title }}</p>
+                    {% else %}
+                        <div class="flex items-center justify-center gap-3 text-slate-400 italic font-medium p-6 bg-slate-50/80 rounded-xl border border-slate-100 border-dashed">
+                            <i class="fa-solid fa-ghost text-xl"></i>
+                            <p>No sufficiently similar titles found in the registry.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Right Column: Metrics (Spans 1 column) -->
+        <div class="space-y-6">
+            
+            <!-- Analysis Results Card -->
+            <div class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+                <div class="p-5 border-b border-slate-50 bg-slate-50/50">
+                    <h3 class="font-bold text-primary flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <i class="fa-solid fa-chart-simple text-emerald-500 text-base"></i>
+                        Analysis Results
+                    </h3>
+                </div>
+                
+                <div class="p-6 space-y-8">
+                    
+                    <!-- Result Status Badge -->
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Final Decision</h4>
+                        {% if item.result in ['Unique', 'UNIQUE'] %}
+                            <div class="flex items-center justify-center px-4 py-3 bg-emerald-50 text-emerald-600 text-sm font-black uppercase rounded-xl border border-emerald-100 shadow-sm w-full transition-all hover:bg-emerald-100">
+                                <i class="fa-solid fa-circle-check mr-2 text-lg"></i> Unique
+                            </div>
+                        {% else %}
+                            <div class="flex items-center justify-center px-4 py-3 bg-rose-50 text-rose-600 text-sm font-black uppercase rounded-xl border border-rose-100 shadow-sm w-full transition-all hover:bg-rose-100">
+                                <i class="fa-solid fa-triangle-exclamation mr-2 text-lg"></i> Taken / Too Similar
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="h-px bg-slate-100 w-full"></div>
+
+                    <!-- Similarity Score & Progress Bar -->
+                    <div>
+                        <div class="flex justify-between items-end mb-3">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Similarity Score</h4>
+                            <span class="text-3xl font-black text-primary leading-none">{{ "%.1f"|format(item.similarity_score * 100) }}%</span>
+                        </div>
+                        
+                        <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden border border-slate-50">
+                            <div class="{% if item.result in ['Unique', 'UNIQUE'] %}bg-emerald-500{% else %}bg-rose-500{% endif %} h-full transition-all duration-1000 ease-out relative" style="width: {{ item.similarity_score * 100 }}%">
+                                <div class="absolute top-0 right-0 w-4 h-full bg-white/20 skew-x-12"></div>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-2 italic font-medium leading-relaxed">Confidence metric calculated from semantic natural language processing.</p>
+                    </div>
+
+                    <div class="h-px bg-slate-100 w-full"></div>
+
+                    <!-- Timestamp -->
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Timestamp</h4>
+                        <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100 text-slate-600">
+                            <i class="fa-regular fa-calendar-check text-slate-400 text-lg"></i>
+                            <span class="text-sm font-bold tabular-nums">{{ item.date }}</span>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

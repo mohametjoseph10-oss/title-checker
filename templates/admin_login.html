@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Access - Title Checker</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #002045;
+            --accent: #0056b3;
+            --academic-radius: 18px;
+        }
+        body { font-family: 'Outfit', sans-serif; }
+        .bg-academic {
+            background: radial-gradient(circle at 0% 0%, rgba(0, 86, 179, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 100% 100%, rgba(0, 32, 69, 0.03) 0%, transparent 50%),
+                        #f8fafc;
+        }
+        .rounded-academic { border-radius: var(--academic-radius); }
+        .success-pulse { animation: successPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        /* Login Button Fix */
+        .login-btn {
+            width: 100%;
+            height: 56px;
+            background-color: #0b2c5f;
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .login-btn:hover {
+            background-color: #081f45;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0,32,69,0.15);
+        }
+        .login-btn:active { transform: translateY(0); }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    </style>
+</head>
+<body class="bg-academic flex flex-col items-center justify-center min-h-screen p-6">
+    <div id="loginCard" class="bg-white p-8 rounded-academic shadow-[0_15px_40px_rgba(0,32,69,0.06)] w-full max-w-sm border border-slate-100 transition-all duration-500">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-[#0b2c5f] text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[#0b2c5f]/10">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <h1 class="text-xl font-black text-primary tracking-tight uppercase">Admin Access</h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Institutional Verification System</p>
+        </div>
+        
+        <form id="loginForm" class="space-y-5" autocomplete="off" onsubmit="event.preventDefault(); login();">
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Email</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300 group-focus-within:text-accent transition-colors">
+                        <i class="fa-solid fa-envelope text-xs"></i>
+                    </div>
+                    <input id="admin_email_unique" name="admin_email_unique" type="email" autocomplete="new-email" placeholder="Enter admin email" oninput="clearError()" 
+                        class="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-primary placeholder:text-slate-300 focus:ring-4 focus:ring-accent/5 focus:border-accent outline-none transition-all">
+                </div>
+            </div>
+            
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300 group-focus-within:text-accent transition-colors">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                    </div>
+                    <input id="admin_password_unique" name="admin_password_unique" type="password" autocomplete="new-password" placeholder="Enter password" oninput="clearError()" 
+                        class="block w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-primary placeholder:text-slate-300 focus:ring-4 focus:ring-accent/5 focus:border-accent outline-none transition-all">
+                    <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-300 hover:text-primary transition-colors">
+                        <i id="toggleIcon" class="fa-solid fa-eye-slash text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center px-1">
+                <label class="flex items-center cursor-pointer group">
+                    <input id="remember" type="checkbox" class="sr-only">
+                    <div class="w-3.5 h-3.5 border-2 border-slate-200 rounded flex items-center justify-center transition-all group-hover:border-accent bg-white">
+                        <div class="w-1.5 h-1.5 bg-accent rounded-sm opacity-0 scale-0 transition-all check-mark"></div>
+                    </div>
+                    <span class="ml-2 text-[10px] font-bold text-slate-400 uppercase tracking-tight group-hover:text-primary transition-colors">Remember Me</span>
+                </label>
+            </div>
+
+            <div id="error" class="bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-xl hidden text-[10px] font-bold text-center animate-shake"></div>
+
+            <button id="authBtn" type="submit" class="login-btn">
+                <span id="btnText">Login to Dashboard</span>
+                <i id="btnLoader" class="fa-solid fa-circle-notch hidden animate-spin text-sm"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="mt-8">
+        <a href="{{ url_for('home') }}" class="inline-flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hover:text-primary transition-all hover:gap-3 group">
+            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+            Return to Public Portal
+        </a>
+    </div>
+
+    <style>
+        input[type="checkbox"]:checked + div { border-color: var(--accent); }
+        input[type="checkbox"]:checked + div .check-mark { opacity: 1; scale: 1; }
+    </style>
+
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById('admin_password_unique');
+            const icon = document.getElementById('toggleIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            } else {
+                pwd.type = 'password';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            }
+        }
+
+        function clearError() {
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        function showError(msg) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = msg;
+            errorEl.classList.remove('hidden');
+        }
+
+        async function login() {
+            const email = document.getElementById('admin_email_unique').value.trim();
+            const password = document.getElementById('admin_password_unique').value;
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const authBtn = document.getElementById('authBtn');
+            const card = document.getElementById('loginCard');
+            
+            if (!email || !password) {
+                showError("Credentials required.");
+                return;
+            }
+
+            btnText.textContent = 'Authenticating...';
+            btnLoader.classList.remove('hidden');
+            authBtn.disabled = true;
+            clearError();
+
+            try {
+                const res = await fetch('/admin/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        admin_email_unique: email, 
+                        admin_password_unique: password
+                    })
+                });
+                const data = await res.json();
+                
+                if(res.ok && data.success) {
+                    btnText.textContent = 'Success';
+                    btnLoader.className = 'fa-solid fa-circle-check text-emerald-400 text-sm';
+                    btnLoader.classList.remove('animate-spin');
+                    card.classList.add('success-pulse');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin/dashboard';
+                    }, 800);
+                } else {
+                    showError(data.message || "Invalid administrative credentials.");
+                    resetButton();
+                }
+            } catch(e) {
+                showError("Connection error. Try again.");
+                resetButton();
+            }
+            
+            function resetButton() {
+                btnText.textContent = 'Login to Dashboard';
+                btnLoader.classList.add('hidden');
+                btnLoader.className = 'fa-solid fa-circle-notch hidden animate-spin text-sm';
+                authBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

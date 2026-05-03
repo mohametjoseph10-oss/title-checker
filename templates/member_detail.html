@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}{{ member.full_name }} – Group Member{% endblock %}
+
+{% block head %}
+<style>
+    .member-hero {
+        background: linear-gradient(135deg, #002045 0%, #0056b3 100%);
+        min-height: 320px;
+        position: relative;
+        overflow: hidden;
+    }
+    .member-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.07) 0%, transparent 60%);
+    }
+    .profile-photo-wrap {
+        position: relative;
+        display: inline-block;
+    }
+    .profile-photo {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid #fff;
+        box-shadow: 0 12px 40px rgba(0,32,69,0.30);
+    }
+    .profile-photo-ring {
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        border: 3px dashed rgba(255,255,255,0.4);
+        animation: spin-slow 10s linear infinite;
+    }
+    @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+    .info-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 12px 40px -12px rgba(0,32,69,0.14);
+        border: 1.5px solid #e8edf5;
+        overflow: hidden;
+    }
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row:hover { background: #f8fafc; }
+    .info-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1rem;
+    }
+    .btn-wa {
+        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        color: #fff;
+        border-radius: 14px;
+        padding: 0.85rem 2.2rem;
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 6px 20px rgba(37,211,102,0.3);
+    }
+    .btn-wa:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(37,211,102,0.4);
+        color: #fff;
+    }
+    .btn-email {
+        background: linear-gradient(135deg, #002045 0%, #0056b3 100%);
+        color: #fff;
+        border-radius: 14px;
+        padding: 0.85rem 2.2rem;
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 6px 20px rgba(0,86,179,0.3);
+    }
+    .btn-email:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0,86,179,0.4);
+        color: #fff;
+    }
+    .btn-back {
+        background: #fff;
+        color: #002045;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 0.85rem 2rem;
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        transition: all 0.2s;
+    }
+    .btn-back:hover {
+        border-color: #002045;
+        background: #f8fafc;
+        color: #002045;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Banner -->
+<section class="member-hero">
+    <div class="max-w-4xl mx-auto px-6 pt-16 pb-28 text-center relative z-10">
+        <span class="inline-block bg-white/15 text-white text-[11px] font-black uppercase tracking-[0.25em] px-4 py-1.5 rounded-full mb-6">
+            Group Member Profile
+        </span>
+        <div class="profile-photo-wrap mx-auto">
+            <div class="profile-photo-ring"></div>
+            <!-- Clipping circle wraps the img so zoom/position stays inside -->
+            <div style="width:180px; height:180px; border-radius:50%; overflow:hidden;
+                        border:5px solid #fff; box-shadow:0 12px 40px rgba(0,32,69,0.30);
+                        position:relative; z-index:1;">
+                <img
+                    src="{{ url_for('static', filename='images/' + member.photo) }}"
+                    alt="{{ member.full_name }}"
+                    style="width:100%; height:100%; object-fit:cover; object-position: center top; display:block;
+                           transform-origin: center center;
+                           transform: scale({{ member.image_scale | default(1, true) }}) translate({{ member.image_pos_x | default(0, true) }}%, {{ member.image_pos_y | default(0, true) }}%);"
+                    onerror="this.src='https://ui-avatars.com/api/?name={{ member.full_name | urlencode }}&background=0056b3&color=fff&size=200'"
+                >
+            </div>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black text-white mt-6 mb-2">{{ member.full_name }}</h1>
+        <p class="text-blue-200 font-semibold text-base">{{ member.department }}</p>
+    </div>
+</section>
+
+<!-- Info Card -->
+<section class="pb-24" style="margin-top:-80px; position:relative; z-index:10;">
+    <div class="max-w-2xl mx-auto px-6">
+        <div class="info-card mb-8">
+
+            <!-- Student ID -->
+            <div class="info-row">
+                <div class="info-icon bg-blue-50 text-brand-blue">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Student ID</p>
+                    <p class="font-black text-navy text-base">{{ member.student_id }}</p>
+                </div>
+            </div>
+
+            <!-- Department -->
+            <div class="info-row">
+                <div class="info-icon bg-indigo-50 text-indigo-600">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Department</p>
+                    <p class="font-black text-navy text-base">{{ member.department }}</p>
+                </div>
+            </div>
+
+            <!-- WhatsApp -->
+            <div class="info-row">
+                <div class="info-icon bg-green-50 text-green-600">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">WhatsApp</p>
+                    <p class="font-black text-navy text-base">+{{ member.whatsapp }}</p>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="info-row">
+                <div class="info-icon bg-sky-50 text-sky-600">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</p>
+                    <p class="font-black text-navy text-base">{{ member.email }}</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4 justify-center mb-6">
+            <a href="https://wa.me/{{ member.whatsapp }}" target="_blank" rel="noopener" class="btn-wa">
+                <i class="fa-brands fa-whatsapp text-lg"></i>
+                Chat on WhatsApp
+            </a>
+            <a href="mailto:{{ member.email }}" class="btn-email">
+                <i class="fa-solid fa-paper-plane"></i>
+                Send Email
+            </a>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url_for('home') }}#team" class="btn-back">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+                Back to Team
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

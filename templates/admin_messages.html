@@ -1,0 +1,332 @@
+{% extends "admin_layout.html" %}
+{% set active_page = "messages" %}
+{% block title %}Support Messages{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in space-y-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-primary tracking-tight">Support Messages</h1>
+            <p class="text-sm text-slate-500 font-medium">Review and manage contact inquiries from users.</p>
+        </div>
+        {% if messages and session.get('role') in ['Super Admin', 'Admin'] %}
+        <form action="{{ url_for('clear_all_messages') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all messages? This action cannot be undone.');">
+            <button type="submit" class="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white rounded-academic text-xs font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-2">
+                <i class="fa-solid fa-trash-can"></i>
+                Clear All
+            </button>
+        </form>
+        {% endif %}
+    </header>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="p-4 mb-4 text-sm {% if category == 'error' %}text-rose-700 bg-rose-50 border border-rose-100{% else %}text-emerald-700 bg-emerald-50 border border-emerald-100{% endif %} rounded-academic animate-fade-in flex items-center gap-3">
+            <i class="fa-solid {% if category == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Stats Section -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-inbox text-lg"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-primary tracking-tight tabular-nums">{{ stats.total }}</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Received</p>
+            </div>
+        </div>
+        
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-envelope-open-text text-lg"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-primary tracking-tight tabular-nums">{{ stats.new }}</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">New (24h)</p>
+            </div>
+        </div>
+        
+        <div class="bg-white p-5 rounded-academic border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+            </div>
+            <div>
+                <p class="text-sm font-black text-primary uppercase tracking-tighter">{% if stats.latest %}{{ stats.latest.strftime('%b %d, %H:%M') }}{% else %}N/A{% endif %}</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Latest Entry</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toolbar Section -->
+    <section class="bg-white p-4 rounded-academic border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="relative w-full md:w-96">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs pointer-events-none"></i>
+            <input type="text" id="searchInput" value="{{ current_search }}" placeholder="Search inquiries..." 
+                onkeyup="if(event.key === 'Enter') applySearch()"
+                class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-academic focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none text-xs font-medium transition-all">
+        </div>
+        
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:block">Sort By</span>
+            <select id="sortDropdown" onchange="applySortDropdown()" class="bg-white border border-slate-200 py-2 pl-3 pr-8 rounded-academic text-xs font-bold text-primary focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none cursor-pointer w-full md:w-48 transition-all">
+                <option value="date_desc" {% if current_sort_by == 'date' and current_order == 'desc' %}selected{% endif %}>Newest First</option>
+                <option value="date_asc" {% if current_sort_by == 'date' and current_order == 'asc' %}selected{% endif %}>Oldest First</option>
+                <option value="name_asc" {% if current_sort_by == 'name' and current_order == 'asc' %}selected{% endif %}>Sender Name A-Z</option>
+                <option value="name_desc" {% if current_sort_by == 'name' and current_order == 'desc' %}selected{% endif %}>Sender Name Z-A</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Inbox Table -->
+    <section class="bg-white rounded-academic border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th onclick="toggleSort('id')" class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-20 text-center cursor-pointer hover:text-primary transition-colors">ID</th>
+                        <th onclick="toggleSort('last_activity')" class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-40 cursor-pointer hover:text-primary transition-colors">Last Activity</th>
+                        <th onclick="toggleSort('name')" class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-64 cursor-pointer hover:text-primary transition-colors">Sender Profile</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-48">Subject</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Thread Preview</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-32">Status</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-40 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for m in messages %}
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-6 py-6 align-top text-center">
+                            <span class="text-[10px] font-bold text-slate-400 tabular-nums">#{{ m.id }}</span>
+                        </td>
+                        <td class="px-6 py-6 align-top">
+                            <p class="text-[10px] font-black text-rose-500 uppercase">
+                                {% if m.last_activity is string %}{{ m.last_activity }}{% else %}{{ m.last_activity.strftime('%d %b %Y') }}{% endif %}
+                            </p>
+                            <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">
+                                {% if m.last_activity is not string %}{{ m.last_activity.strftime('%H:%M %p') }}{% endif %}
+                            </p>
+                        </td>
+                        <td class="px-6 py-6 align-top">
+                            <p class="text-sm font-bold text-primary">{{ m.name }}</p>
+                            <p class="text-[11px] font-medium text-slate-400 mt-1">{{ m.email }}</p>
+                        </td>
+                        <td class="px-6 py-6 align-top">
+                            <span class="text-[10px] font-black text-primary bg-slate-100 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                                {{ m.subject or 'No Subject' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-6 align-top">
+                            <div class="text-xs font-medium text-slate-600 line-clamp-2 hover:line-clamp-none transition-all cursor-help max-w-xl leading-relaxed" title="{{ m.last_preview or m.message }}">
+                                <i class="fa-solid fa-share text-[8px] text-slate-300 mr-1"></i>
+                                {{ m.last_preview or m.message }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-6 align-top">
+                            <span class="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter {% if m.status == 'Replied' %}bg-emerald-50 text-emerald-600 border border-emerald-100{% else %}bg-amber-50 text-amber-600 border border-amber-100{% endif %}">
+                                {{ m.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-6 align-top text-right">
+                                <div class="flex justify-end items-center gap-2">
+                                    {% if session.get('role') in ['Super Admin', 'Admin'] %}
+                                    <a href="{{ url_for('message_conversation', message_id=m.id) }}" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="View Conversation">
+                                        <i class="fa-solid fa-comments text-xs"></i>
+                                    </a>
+                                    <button onclick='openReplyModal("{{ m.id }}", "{{ m.email }}", "{{ m.subject or 'Support Inquiry' }}", {{ m.message|tojson|safe }})' class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Reply">
+                                        <i class="fa-solid fa-reply text-xs"></i>
+                                    </button>
+
+                                    <form action="{{ url_for('delete_message', id=m.id) }}" method="POST" onsubmit="return confirm('Delete this message?');" class="inline">
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Delete">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-[9px] font-bold text-slate-300 uppercase tracking-widest italic">Locked</span>
+                                    {% endif %}
+                                </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-24 text-center">
+                            <div class="flex flex-col items-center justify-center opacity-30">
+                                <i class="fa-solid fa-envelope-open text-4xl mb-3 text-slate-400"></i>
+                                <p class="text-sm font-bold italic text-slate-500">No support messages detected.</p>
+                                {% if current_search %}
+                                    <button onclick="clearSearch()" class="mt-4 text-xs font-black text-primary uppercase tracking-widest hover:underline underline-offset-4 transition-all">Clear Search Filters</button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- Reply Modal -->
+<div id="replyModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-primary/40 backdrop-blur-sm transition-opacity"></div>
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative animate-in zoom-in-95 duration-200 overflow-hidden">
+            <header class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-h3 text-lg text-primary flex items-center gap-2">
+                    <i class="fa-solid fa-reply text-sm"></i>
+                    Reply to Message
+                </h3>
+                <button onclick="toggleReplyModal()" class="text-slate-400 hover:text-primary transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </header>
+            
+            <form action="{{ url_for('admin_reply_message') }}" method="POST" id="replyForm" class="p-6 space-y-4">
+                <input type="hidden" name="message_id" id="reply_id">
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipient</label>
+                    <input type="text" name="recipient_email" id="reply_email" readonly class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold text-slate-500 outline-none">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Original Message</label>
+                    <div id="original_message_preview" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-medium text-slate-500 italic max-h-32 overflow-y-auto leading-relaxed"></div>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subject</label>
+                    <input type="text" name="subject" id="reply_subject" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-primary outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all">
+                </div>
+                
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Message</label>
+                        <span id="charCount" class="text-[10px] font-bold text-slate-400">0 / 1000</span>
+                    </div>
+                    <textarea name="reply_body" id="reply_body" required maxlength="1000" placeholder="Write your reply here..." rows="5" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-xs font-medium text-slate-600 outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none"></textarea>
+                    <p id="reply_error" class="text-[10px] font-bold text-rose-500 hidden pt-1">Reply must be at least 5 characters long.</p>
+                </div>
+                
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closeReplyModal()" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
+                    <button type="submit" id="sendReplyBtn" disabled class="flex-[2] bg-slate-300 text-white px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-not-allowed">Send Reply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSort(field) {
+        const currentField = "{{ current_sort_by }}";
+        const currentOrder = "{{ current_order }}";
+        let newOrder = 'asc';
+        if (field === currentField) newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+        else if (field === 'date') newOrder = 'desc';
+        applyAllFilters(field, newOrder);
+    }
+
+    function applySortDropdown() {
+        const val = document.getElementById('sortDropdown').value;
+        const [sort_by, order] = val.split('_');
+        applyAllFilters(sort_by, order);
+    }
+
+    function applySearch() {
+        applyAllFilters("{{ current_sort_by }}", "{{ current_order }}");
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        applySearch();
+    }
+
+    function applyAllFilters(sort_by, order) {
+        const search = document.getElementById('searchInput').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort_by', sort_by);
+        url.searchParams.set('order', order);
+        if (search) url.searchParams.set('search', search);
+        else url.searchParams.delete('search');
+        window.location.href = url.toString();
+    }
+
+    function toggleReplyModal() {
+        const modal = document.getElementById('replyModal');
+        modal.classList.toggle('hidden');
+    }
+
+    function closeReplyModal() {
+        document.getElementById('replyModal').classList.add('hidden');
+    }
+
+    function openReplyModal(id, email, subject, message) {
+        document.getElementById('reply_id').value = id;
+        document.getElementById('reply_email').value = email;
+        document.getElementById('reply_subject').value = "Re: " + subject;
+        document.getElementById('original_message_preview').innerText = message;
+        
+        // Reset form
+        const body = document.getElementById('reply_body');
+        body.value = '';
+        updateButtonState();
+        
+        toggleReplyModal();
+    }
+
+    const replyBody = document.getElementById('reply_body');
+    const charCount = document.getElementById('charCount');
+    const sendBtn = document.getElementById('sendReplyBtn');
+    const replyError = document.getElementById('reply_error');
+
+    function updateButtonState() {
+        const len = replyBody.value.trim().length;
+        charCount.innerText = `${len} / 1000`;
+        
+        if (len > 0) {
+            sendBtn.disabled = false;
+            sendBtn.classList.remove('bg-slate-300', 'cursor-not-allowed');
+            sendBtn.classList.add('bg-primary', 'shadow-lg', 'hover:shadow-primary/20', 'hover:-translate-y-0.5');
+        } else {
+            sendBtn.disabled = true;
+            sendBtn.classList.add('bg-slate-300', 'cursor-not-allowed');
+            sendBtn.classList.remove('bg-primary', 'shadow-lg', 'hover:shadow-primary/20', 'hover:-translate-y-0.5');
+        }
+
+        if (len >= 5 || len === 0) {
+            replyError.classList.add('hidden');
+        } else {
+            replyError.classList.remove('hidden');
+        }
+    }
+
+    replyBody.addEventListener('input', updateButtonState);
+
+    document.getElementById('replyForm').addEventListener('submit', function(e) {
+        const len = replyBody.value.trim().length;
+        if (len < 5) {
+            e.preventDefault();
+            replyError.classList.remove('hidden');
+            replyBody.focus();
+        }
+    });
+</script>
+
+<style>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+</style>
+{% endblock %}

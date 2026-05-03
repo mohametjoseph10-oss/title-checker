@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service - Project Title Checker System{% endblock %}
+
+{% block content %}
+<main>
+    <!-- Hero Header -->
+    <section class="bg-navy pt-24 pb-40 px-8 relative overflow-hidden text-center">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-[-20%] right-[-10%] w-[50%] h-[70%] bg-brand-blue blur-[150px] rounded-full"></div>
+            <div class="absolute bottom-[-20%] left-[-10%] w-[50%] h-[70%] bg-blue-900 blur-[150px] rounded-full"></div>
+        </div>
+        <div class="max-w-4xl mx-auto relative z-10 animate-fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/20 border border-brand-blue/30 text-white text-[10px] font-black uppercase tracking-[0.25em] mb-8">
+                <span class="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span> Last Updated: April 27, 2024
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter mb-6 leading-tight">Terms of Service</h1>
+            <p class="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
+                Rules and guidelines for the ethical use of our academic validation system. By using this platform, you agree to these institutional standards.
+            </p>
+        </div>
+    </section>
+
+    <!-- Terms Content Grid -->
+    <section class="px-8 -mt-24 pb-32 relative z-20">
+        <div class="max-w-6xl mx-auto space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- 1. Academic Use Only -->
+                <div class="terms-card bg-white p-10 rounded-academic border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+                    <div class="w-16 h-16 bg-blue-50 text-navy rounded-2xl flex items-center justify-center mb-8 border border-blue-100">
+                        <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-navy mb-4 uppercase tracking-tight">Academic Use Only</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">
+                        The Project Title Checker System is strictly designed for educational and academic purposes. It is intended to help students and researchers verify the originality of proposed topics against existing archives.
+                    </p>
+                </div>
+
+                <!-- 2. Acceptable Content -->
+                <div class="terms-card bg-white p-10 rounded-academic border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+                    <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-8 border border-rose-100">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-navy mb-4 uppercase tracking-tight">Acceptable Content</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">
+                        Users must not submit content that is harmful, illegal, explicit, or designed to deliberately bypass or break the Machine Learning verification systems. Manipulation of input is prohibited.
+                    </p>
+                </div>
+
+                <!-- 3. Guidance Disclaimer -->
+                <div class="terms-card bg-white p-10 rounded-academic border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+                    <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-8 border border-amber-100">
+                        <i class="fa-solid fa-circle-info text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-navy mb-4 uppercase tracking-tight">Guidance Disclaimer</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">
+                        Results are for guidance only. A "Unique" validation does not constitute final approval from institutional review committees, ethics boards, or departmental supervisors.
+                    </p>
+                </div>
+
+                <!-- 4. System Limitations -->
+                <div class="terms-card bg-white p-10 rounded-academic border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+                    <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-8 border border-purple-100">
+                        <i class="fa-solid fa-microchip text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-navy mb-4 uppercase tracking-tight">System Limitations</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">
+                        While our AI model is highly accurate, it does not guarantee absolute uniqueness. It operates within the constraints of the currently imported institutional datasets and repository logs.
+                    </p>
+                </div>
+
+                <!-- 5. User Responsibilities -->
+                <div class="terms-card bg-white p-10 rounded-academic border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+                    <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-8 border border-emerald-100">
+                        <i class="fa-solid fa-user-check text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-navy mb-4 uppercase tracking-tight">User Responsibilities</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">
+                        Users are responsible for the accuracy of submitted titles and must use the system in good faith. Any attempt to scrape the repository or automate queries without permission is strictly forbidden.
+                    </p>
+                </div>
+
+                <!-- 6. Changes to Terms -->
+                <div class="terms-card bg-white p-10 rounded-academic border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+                    <div class="w-16 h-16 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mb-8 border border-slate-200">
+                        <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-navy mb-4 uppercase tracking-tight">Changes to Terms</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">
+                        We reserve the right to modify these terms at any time. Significant changes will be announced on the system dashboard. Continued use after updates constitutes acceptance of the new terms.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- 7. Contact Information Full Width -->
+            <div class="terms-card bg-navy p-12 rounded-academic shadow-2xl shadow-navy/30 relative overflow-hidden group text-white">
+                <div class="flex flex-col md:flex-row items-center gap-10">
+                    <div class="flex-1">
+                        <div class="w-20 h-20 bg-white/10 text-white rounded-3xl flex items-center justify-center mb-8 border border-white/20">
+                            <i class="fa-solid fa-headset text-3xl"></i>
+                        </div>
+                        <h3 class="text-3xl font-black text-white mb-4 uppercase tracking-tight">Institutional Contact</h3>
+                        <p class="text-slate-300 font-medium leading-relaxed max-w-xl">
+                            If you have questions regarding these terms or institutional policies, please reach out to our legal and compliance department.
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-4 w-full md:w-auto">
+                        <a href="mailto:mohametjoseph10@gmail.com" class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl flex items-center gap-4 transition-all group/btn">
+                            <i class="fa-solid fa-envelope text-brand-blue group-hover/btn:scale-110 transition-transform"></i>
+                            <span class="text-sm font-black uppercase tracking-widest">mohametjoseph10@gmail.com</span>
+                        </a>
+                        <a href="https://wa.me/252611146598" class="px-8 py-4 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-2xl flex items-center gap-4 transition-all group/btn">
+                            <i class="fa-brands fa-whatsapp text-emerald-500 group-hover/btn:scale-110 transition-transform"></i>
+                            <span class="text-sm font-black uppercase tracking-widest">WhatsApp Support</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Final Acknowledgement -->
+    <section class="max-w-4xl mx-auto px-8 pb-32 text-center">
+        <p class="text-slate-400 text-xs font-black uppercase tracking-[0.3em] mb-4">Agreement Notice</p>
+        <p class="text-slate-500 text-sm font-medium italic leading-relaxed max-w-2xl mx-auto">
+            "By interacting with the Title Checker System, you acknowledge that you have read, understood, and agreed to be bound by these institutional terms and our Privacy Policy."
+        </p>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Intersection Observer for fade-up animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-up');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.terms-card').forEach(card => {
+        card.style.opacity = '0';
+        observer.observe(card);
+    });
+</script>
+{% endblock %}
+
+{% block head %}
+<style>
+    .terms-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .terms-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px -12px rgba(0, 32, 69, 0.12);
+    }
+    .animate-fade-up {
+        animation: fadeUp 0.8s ease-out forwards;
+    }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
