@@ -10,10 +10,11 @@ def get_db_connection():
     try:
         # Create a brand new connection with stability parameters
         conn = mysql.connector.connect(
-            host="localhost",
+            host="switchyard.proxy.rlwy.net",
             user="root",
-            password="",
-            database="title_checker",
+            password="PxTbRAQbVgpUddYwHkFXBXBiZAkdPwxS",
+            database="railway",
+            port=15266,
             # Connection settings to prevent stale handles
             connection_timeout=10,
             buffered=True,
